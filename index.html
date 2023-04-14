@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    *{
+        padding: 10px;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    body{
+        background-color: black;
+    }
+    .heading{
+        color: white;
+        text-align: center;
+        font-size: 100px;
+        position: sticky;
+
+    }
+    .navigation{
+        text-decoration: none;
+        /* background-color: rgb(51, 54, 54); */
+        color: white;
+        text-align: center;  
+        font-size: x-large;
+    }
+    #link{
+        text-decoration: none;
+        color: white;
+        padding-left: 80px;
+        padding-right: 80px;
+        text-align: center;
+        position: sticky ;
+    }
+    #link:hover{
+        text-decoration: none;
+        color: white;
+        background-color: aqua;
+        transition: 0.2s;
+        box-shadow: 0px 0px 15px white;
+    }
+    .inside{
+        color: rgb(255, 255, 255);
+        text-align: center;
+        font-size: larger;
+        font-size: xx-large;
+    }
+    .introduction{
+        border: solid black 0px;
+        border-radius: 25px;
+        transition: 0.2s;
+        background-image: url("/jeremy-bishop-1braZySlEKA-unsplash.jpg");
+        background-size: cover;
+    }
+    .introduction:hover{
+        border: solid  aqua 2px;
+        box-shadow: 0px 0px 15px white;
+        border-radius: 25px;
+        transition: 0.2s;
+    }
+    .inside{
+        padding: 150px;
+    }
+    .inside1{
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    .quote{
+        text-align: center;
+        color: aqua;
+        font-size: 50px;
+    }
+    .Waterusage{
+        background-image: url("/waterusage.jpg");
+        background-size: cover;
+        border-radius: 25px;
+        transition: 0.3s;
+    }
+    .Waterusage:hover{
+        background-image: url("/waterusage.jpg");
+        background-size: cover;
+        border-radius: 25px;
+        transition: 0.3s;
+        border: solid white 1px;
+        box-shadow: 0px 0px 15px white;
+    }
+    .heading1{
+        text-align: center;
+        font-size: 50px;
+        color: rgb(0, 0, 0);
+        text-decoration:solid;
+        font-weight:600;
+        
+    }
+    .inside2{
+        color: white;
+        text-align: center;
+        font-size: 30px;
+        padding: 60px;
+       
+    }
+    .watersource{
+        background-image: url("/water\ sources.jpg");
+        background-size: cover;
+        border-radius: 25px;
+        transition: 0.3s
+    }
+    .watersource:hover{
+          
+        background-image: url("/water\ sources.jpg");
+        background-size: cover;
+        border-radius: 25px;
+        transition: 0.3s;
+        box-shadow: 0px 0px 15px white;
+        border: solid 1px white;
+
+    
+    }
+    .heading2{
+         text-align: center;
+        font-size: 50px;
+        color: rgb(255, 255, 255);
+        text-decoration:solid;
+        font-weight:600;
+    }
+    .inside3{
+         color: white;
+        text-align: center;
+        font-size: 30px;
+        padding: 60px;
+    }
+    .cards{
+        overflow: auto;
+    }
+    .gw{
+        background-image: url("/glacr.jpg");
+        background-size: cover;
+        border: solid 0px black;
+        height: 900px;
+        width: 350px;
+        float: left;
+        transition: 0.3s;
+    }
+     .gw:hover{
+        background-image: url("/glacr.jpg");
+        background-size: cover;
+        border: solid 1px rgb(255, 255, 255);
+        box-shadow: 0px 0px 15px white;
+        height: 900px;
+        width: 350px;
+        float: left;
+         transition: 0.3s;
+    }
+    .Gw{
+        background-image: url("/gw.jpg");
+        background-size: cover;
+        border: solid 0px black;
+        height: 900px;
+        width: 350px;
+        float:left;
+        margin-left: 12%;
+        padding-left: 10px;
+         transition: 0.3s;
+
+    }
+    .Gw:hover{
+        background-image: url("/gw.jpg");
+        background-size: cover;
+        border: solid 0px black;
+        height: 900px;
+        width: 350px;
+        float:left;
+        margin-left: 12%;
+        padding-left: 10px;
+         border: solid 1px rgb(255, 255, 255);
+        box-shadow: 0px 0px 15px white;
+         transition: 0.3s;
+
+    }
+    .SW{
+        background-image: url("/sw.jpg");
+        background-size: cover;
+        border: solid 0px black;
+        height: 900px;
+        width: 350px;
+        float:right;
+         transition: 0.3s;
+    }
+    .SW:hover{
+        background-image: url("/sw.jpg");
+        background-size: cover;
+        border: solid 0px black;
+        height: 900px;
+        width: 350px;
+        float:right;
+         border: solid 1px rgb(255, 255, 255);
+        box-shadow: 0px 0px 15px white;
+         transition: 0.3s;
+
+    }
+    .WATERs{
+        color: white;
+        font-size: 40px;
+        font-weight: bold;
+    }
+    .heading3{
+        text-align:center;
+        color: white;
+        font-size: 40px;
+        font-weight: bold;
+    }
+    .inside4{
+        color: rgb(0, 0, 0);
+        text-align: center;
+        font-size: 20px;
+        /* padding: 1px; */
+    }
+    .inside5{
+        color: rgb(255, 255, 255);
+        text-align: center;
+        font-size: 20px;
+        /* padding: 1px; */
+    }
+    .inside6{
+        color: rgb(255, 255, 255);
+        text-align: center;
+        font-size: 20px;
+        /* padding: 1px; */
+    }
+    .waterm{
+        background-image: url("/mangement.jpg");
+        background-size: cover;
+        border-radius: 25px;
+        transition: 0.3s;
+    }
+    .waterm:hover{
+        background-image: url("/mangement.jpg");
+        background-size: cover;
+        border-radius: 25px;
+        border: solid 1px white;
+        box-shadow: 0px 0px 15px white;
+        transition: 0.3s;
+    }
+    .heading4{
+        text-align: center;
+        font-size: 50px;
+        color: rgb(255, 255, 255);
+        text-decoration:solid;
+        font-weight:600;
+
+    }
+    .inside7{
+        color: white;
+        text-align: center;
+        font-size: 30px;
+        padding: 60px;
+
+    }
+    .ws{
+        background-image: url("/ws.jpg");
+        background-size: cover;
+        border-radius: 25px;
+        transition: 0.3s
+     }
+     .ws:hover{
+        background-image: url("/ws.jpg");
+        background-size: cover;
+        border-radius: 25px;
+        border: solid 1px white;
+        box-shadow: 0px 0px 15px white;
+        transition: 0.3s
+     }
+     .heading5{
+         text-align: center;
+        font-size: 50px;
+        color: rgb(255, 255, 255);
+        text-decoration:solid;
+        font-weight:600;
+     }
+     .inside8{
+         color: rgb(19, 18, 18);
+        text-align: center;
+        font-size: 30px;
+        padding: 60px;
+        transition: 0.2s;
+        
+     }
+      .inside8:hover{
+         color: rgb(19, 18, 18);
+        text-align: center;
+        font-size: 30px;
+        padding: 60px;
+        text-shadow: 0px 0px 9px white;
+        transition: 0.2s;
+        
+     }
+
+</style>
+<body>
+    <div class="heading">Water Availability</div>
+    <br>
+    <div class="navigation">
+        <a href="#" id="link">Home</a>
+        <a href="/abot us.html" id="link">About Us</a>
+        <a href="/more.html" id="link">More</a>
+        <a href="/objectives.html" id="link">Objectives</a>
+    </div>
+    <br><br><br>
+    <div class="introduction">
+        <div class="inside">
+            <p>Water Availability as a crucial issue that effects the lives of a millions of people worldwide. As The World's popultion continuisly growing and climate change and more 
+                alters wheater Cycle. Water resourses are becoming more valuable. This has led to a increase demand for sustanable water management to ensure that
+                water is avalable for human consumption, agriculture and industrial purpose. In Our project you can explore the cause and effect of water scaricity ,The various approches for water management, and policies and technologies that can be use to ensure water Availability for future Generation. You can also analyse the case study of regions have succesfully implemented sustanable water management practices and The challenges Faced by the regions that continue to struggle with water scarcity. Our project will not only shed light on a important global issue but also highlight the need for collective  action and innovative solutions to ensure water Availability for all.
+            </p>
+        </div>
+    </div>
+    <br>
+    <div class="quote">
+        <div class="inside1">
+            <p>
+                "Water, water everywhere, nor any drop to drink"
+            </p>
+
+        </div>
+    </div>
+    <div class="Waterusage">
+       <div class="heading1">WATER USAGE</div> 
+        <div><img src="" alt=""></div>
+            <div class="inside2">
+                <p>Agriculture uses 70% of water ,then , Municipal uses 11%, Industrial 19% is used by industries
+                    The Average requirement of water  is 20 – 40 liter per head per day
+                    (Twice of the usage 50 years ago)
+                    About 30% of fresh water is used by US (4% of world population) where, middle east (5% of world population use 1% of fresh water).
+                     More than 1 billion people don’t have fresh water supply.
+                    Presently 31 countries facing water scarcity.
+                     By 2025, 48 countries will face water shortage
+                    (including India).</p>
+            </div>
+    </div>
+    <br><br>
+    <div class="watersource">
+        <div class="heading2">WATER SOURCE</div>
+            <div><img src="" alt=""></div>
+                <div class="inside3">
+                    <p>
+                        Water resources are natural resources of water that are potentially useful for humans, for example as a source of drinking water supply or irrigation water. 97% of the water on the Earth is salt water and only three percent is fresh water; slightly over two thirds of this is frozen in glaciers and polar ice caps.Water resources are under threat from water scarcity, water pollution, water conflict and climate change. Fresh water is a renewable resource, yet the world's supply of 
+groundwater is steadily decreasing, with depletion occurring most prominently in Asia, South America and North America, although it is still unclear how much natural renewal balances this usage, and whether ecosystems are threatened. The framework for allocating water resources to water users (where such a framework exists) is known as water rights.
+
+                    </p>
+                </div>
+    </div>
+    <br><br>
+    <center><div class="WATERs">WATER SOURCES</div></center>
+    <div class="cards">
+    <div class="gw">
+        <div class="heading3">GLACIER WATER</div>
+            <div><img src="" alt=""></div>
+                <div class="inside4">
+                    <p>
+                        Glacier runoff is considered to be surface water. The Himalayas, which are often called "The Roof of the World", contain some of the most extensive and rough high altitude areas on Earth as well as the greatest area of glaciers and permafrost outside of the poles. Ten of Asia's largest rivers flow from there, and more than a billion people's livelihoods depend on them. To complicate matters, temperatures there are rising more rapidly than the global average. In Nepal, the temperature has risen by 0.6 degrees Celsius over the last decade, whereas globally, the Earth has warmed approximately 0.7 degrees Celsius over the last hundred years.
+                    </p>
+                </div>
+    </div>
+    
+    <div class="Gw">
+        <div class="heading3">GROUND WATER</div>
+            <div><img src="" alt=""></div>
+                <div class="inside5">
+                    <p>
+                        Groundwater is the water present beneath Earth's surface in rock and soil pore spaces and in the fractures of rock formations. About 30 percent of all readily available freshwater in the world is groundwater.[7] A unit of rock or an unconsolidated deposit is called an aquifer when it can yield a usable quantity of water. The depth at which soil pore spaces or fractures and voids in rock become completely saturated with water is called the water table. Groundwater is recharged from the surface; it may discharge from the surface naturally at springs and seeps, and can form oases or wetlands. 
+                    </p>
+                </div>
+    </div>
+
+    <div class="SW">
+        <div class="heading3">SURFACE WATER</div>
+            <div><img src="" alt=""></div>
+                <div class="inside6">
+                    <p>
+                        Surface water is water in a river, lake or fresh water wetland. Surface water is naturally replenished by precipitation and naturally lost through discharge to the oceans, evaporation, evapotranspiration and groundwater recharge. The only natural input to any surface water system is precipitation within its watershed. The total quantity of water in that system at any given time is also dependent on many other factors. These factors include storage capacity in lakes, wetlands and artificial reservoirs, the permeability of the soil beneath these storage bodies, the runoff characteristics of the land in the watershed, the timing of the precipitation and local evaporation rates. All of these factors also affect the proportions of water loss.
+
+
+                    </p>
+                </div>
+    </div>
+    </div>
+    <br><br>
+    <div class="waterm">
+        <div class="heading4">WATER MANAGEMENT</div>
+            <div><img src="" alt=""></div>
+                <div class="inside7">
+                    <p>
+                        Effective water management is crucial to ensure the sustainable use of water resources and to address water scarcity issues. Here are some ways to manage water effectively:
+
+Water conservation: Encouraging people to use water more efficiently can save a significant amount of water.
+
+Rainwater harvesting: Collecting rainwater can help recharge groundwater and reduce dependency on other sources.
+
+Recycling and reuse: Treating wastewater and using it for non-potable purposes can help conserve freshwater resources.
+
+Efficient irrigation: Using modern irrigation techniques, such as drip irrigation, can reduce water usage in agriculture.
+
+Water pricing: Charging the right price for water can encourage efficient use and discourage wasteful consumption.
+
+Integrated water management: This approach considers the water cycle as a whole and involves stakeholders from different sectors to develop sustainable water management plans.
+
+                    </p>
+                </div>
+    </div>
+    <br><br>
+    <div class="ws">
+        <div class="heading5">WATER SCARICITY</div>
+            <div><img src="" alt=""></div>
+                <div class="inside8">
+                    <p>
+                        About two billion people worldwide don’t have access to safe drinking water today (SDG Report 2022), and roughly half of the world’s population is experiencing severe water scarcity for at least part of the year . These numbers are expected to increase, exacerbated by climate change and population growth .
+Only 0.5 per cent of water on Earth is useable and available freshwater – and climate change is dangerously affecting that supply. Over the past twenty years, terrestrial water storage – including soil moisture, snow and ice – has dropped at a rate of 1 cm per year, with major ramifications for water security 
+Water supplies stored in glaciers and snow cover are projected to further decline over the course of the century, thus reducing water availability during warm and dry periods in regions supplied by melt water from major mountain ranges, where more than one-sixth of the world’s population currently live 
+ 
+Sea-level rise is projected to extend salinization of groundwater, decreasing freshwater availability for humans and ecosystems in coastal areas 
+ 
+Limiting global warming to 1.5°C compared to 2°C would approximately halve the proportion of the world population expected to suffer water scarcity, although there is considerable variability between regions 
+ 
+Water quality is also affected by climate change, as higher water temperatures and more frequent floods and droughts are projected to exacerbate many forms of water pollution – from sediments to pathogens and pesticides 
+ 
+Climate change, population growth and increasing water scarcity will put pressure on food supply (IPCC) as most of the freshwater used, about 70 per cent on average, is used for agriculture (it takes between 2000 and 5000 liters of water to produce a person’s daily food)
+                        
+                    </p>
+                </div>
+    </div>
+    
+</body>
+</html>

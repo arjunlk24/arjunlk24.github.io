@@ -1,5 +1,5 @@
 {
-  "theme": "console-teal",
+  "theme": "console-amber",
   "profile": {
     "name": "Abhay Raj Mathur",
     "role": "Cybersecurity Analyst · SOC L1",
@@ -19,10 +19,44 @@
     "github": "https://github.com/arjunlk24/"
   },
   "skills": {
-    "Tools & Platforms": ["Cortex XDR", "EDR", "Forcepoint DLP", "Sectona PAM", "Wazuh", "VirusTotal", "Wireshark", "Nmap", "Tcpdump", "OSINT", "Angry IP Scanner", "Metasploit"],
-    "Security Domains": ["SOC L1", "SIEM", "EDR", "Endpoint Security", "Incident Response", "DLP", "PAM", "Networking", "Malware Analysis", "Forensics"],
-    "Frameworks": ["CHM", "Diamond Intrusion Analysis", "Cyber Kill Chain", "MITRE ATT&CK"],
-    "Soft Skills": ["Leadership", "Problem Solving", "Team Player", "Adaptability"]
+    "Tools & Platforms": [
+      "Cortex XDR",
+      "EDR",
+      "Forcepoint DLP",
+      "Sectona PAM",
+      "Wazuh",
+      "VirusTotal",
+      "Wireshark",
+      "Nmap",
+      "Tcpdump",
+      "OSINT",
+      "Angry IP Scanner",
+      "Metasploit"
+    ],
+    "Security Domains": [
+      "SOC L1",
+      "SIEM",
+      "EDR",
+      "Endpoint Security",
+      "Incident Response",
+      "DLP",
+      "PAM",
+      "Networking",
+      "Malware Analysis",
+      "Forensics"
+    ],
+    "Frameworks": [
+      "CHM",
+      "Diamond Intrusion Analysis",
+      "Cyber Kill Chain",
+      "MITRE ATT&CK"
+    ],
+    "Soft Skills": [
+      "Leadership",
+      "Problem Solving",
+      "Team Player",
+      "Adaptability"
+    ]
   },
   "experience": [
     {
@@ -41,7 +75,12 @@
   ],
   "projects": [],
   "certifications": [
-    { "name": "Certified Ethical Hacker V12 (CEH)", "issuer": "", "date": "", "link": "" }
+    {
+      "name": "Certified Ethical Hacker V12 (CEH)",
+      "issuer": "",
+      "date": "",
+      "link": ""
+    }
   ],
   "education": [
     {
@@ -58,5 +97,6 @@
       "start": "2020",
       "end": "2021"
     }
-  ]
+  ],
+  "customSections": []
 }

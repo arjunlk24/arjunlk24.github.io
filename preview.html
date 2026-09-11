@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview</title>
+<style>/* ===========================================================
+   THEMES — each theme is just a set of CSS variables.
+   To add a new template later, add a new [data-theme="..."] block
+   here — the HTML/layout never has to change.
+   =========================================================== */
+
+:root,
+[data-theme="console-teal"] {
+  --bg:        #0b0f14;
+  --panel:     #111820;
+  --panel-2:   #0e141b;
+  --line:      #1f2b35;
+  --text:      #e7edf2;
+  --muted:     #8b9aa8;
+  --accent:    #4fd1c5;
+  --accent-2:  #f0b429;
+  --danger:    #ef6a6a;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+[data-theme="console-amber"] {
+  --bg:        #0c0a08;
+  --panel:     #161109;
+  --panel-2:   #120e08;
+  --line:      #2c2013;
+  --text:      #f3ece0;
+  --muted:     #a89a84;
+  --accent:    #f0b429;
+  --accent-2:  #4fd1c5;
+  --danger:    #ef6a6a;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+[data-theme="daylight-slate"] {
+  --bg:        #f5f6f8;
+  --panel:     #ffffff;
+  --panel-2:   #eef1f4;
+  --line:      #dde2e7;
+  --text:      #1a2027;
+  --muted:     #5b6672;
+  --accent:    #0e7c86;
+  --accent-2:  #c2540a;
+  --danger:    #c0392b;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--accent); color: var(--bg); }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+img { max-width: 100%; display: block; }
+button { font-family: inherit; }
+
+.blink { animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .blink { animation: none; }
+  html { scroll-behavior: auto; }
+}
+
+.icon { width: 16px; height: 16px; flex: none; }
+
+/* ---------- scroll progress + back to top ---------- */
+#scroll-progress {
+  position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+  background: var(--accent); z-index: 200; transition: width 0.1s linear;
+}
+#back-to-top {
+  position: fixed; bottom: 24px; right: 24px; width: 42px; height: 42px;
+  border-radius: 50%; border: 1px solid var(--line); background: var(--panel);
+  color: var(--accent); font-size: 18px; cursor: pointer;
+  opacity: 0; pointer-events: none; transform: translateY(10px);
+  transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s;
+  z-index: 150; box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+}
+#back-to-top.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+#back-to-top:hover { background: var(--accent); color: var(--bg); }
+@media (prefers-reduced-motion: reduce) { #back-to-top { transition: opacity 0.1s; } }
+
+/* ---------- scroll reveal ---------- */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.in-view { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) { .reveal { transition: none; opacity: 1; transform: none; } }
+
+/* ---------- hover lift / glow ---------- */
+.entry, .project-card, .badge {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.entry:hover, .project-card:hover, .badge:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  box-shadow: 0 10px 26px -12px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.tag { transition: transform 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+.tag:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
+.nav-tree a { transition: color 0.15s ease, background 0.15s ease, padding-left 0.15s ease; }
+.nav-tree a:hover { padding-left: 14px; }
+
+/* ---------- shell ---------- */
+.app-shell {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 100vh;
+}
+@media (max-width: 860px) {
+  .app-shell { grid-template-columns: 1fr; }
+}
+
+/* ---------- sidebar ---------- */
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 32px 24px;
+  border-right: 1px solid var(--line);
+  background: var(--panel-2);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  overflow-y: auto;
+}
+@media (max-width: 860px) {
+  .sidebar { position: relative; height: auto; border-right: none; border-bottom: 1px solid var(--line); }
+}
+
+.identity { display: flex; align-items: center; gap: 14px; }
+.avatar-wrap {
+  position: relative;
+  width: 56px; height: 56px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  flex: none;
+}
+.avatar-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.identity-text .name { font-weight: 600; font-size: 15px; }
+.identity-text .role { color: var(--muted); font-size: 12.5px; font-family: var(--font-mono); }
+
+.status-line {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+.nav-tree { display: flex; flex-direction: column; gap: 2px; font-family: var(--font-mono); font-size: 13.5px; }
+.nav-tree a {
+  color: var(--muted);
+  padding: 7px 10px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.nav-tree a:hover { color: var(--text); background: var(--panel); text-decoration: none; }
+.nav-tree a.active { color: var(--accent); background: var(--panel); }
+
+.sidebar-contact { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); margin-top: auto; }
+.sidebar-contact a { color: var(--muted); }
+.sidebar-contact a:hover { color: var(--accent); }
+
+.theme-picker { display: flex; gap: 8px; align-items: center; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.theme-picker button {
+  width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line); cursor: pointer; padding: 0;
+}
+.theme-picker button[data-theme-btn="console-teal"] { background: #4fd1c5; }
+.theme-picker button[data-theme-btn="console-amber"] { background: #f0b429; }
+.theme-picker button[data-theme-btn="daylight-slate"] { background: #eef1f4; }
+.theme-picker button.active { border-color: var(--text); }
+
+/* ---------- main ---------- */
+main { padding: 56px 48px 100px; max-width: 900px; }
+@media (max-width: 860px) { main { padding: 36px 20px 80px; } }
+
+.hero { margin-bottom: 72px; position: relative; }
+.hero-art { position: absolute; top: -20px; right: -10px; width: 280px; height: auto; opacity: 0.35; pointer-events: none; z-index: -1; }
+.hero-art .net-node { fill: var(--accent); }
+.hero-art .net-edge { stroke: var(--accent); stroke-width: 0.6; opacity: 0.5; }
+.hero-art .net-node:nth-child(odd) { animation: pulse-node 3.4s ease-in-out infinite; }
+.hero-art .net-node:nth-child(even) { animation: pulse-node 3.4s ease-in-out infinite 1.1s; }
+@keyframes pulse-node { 0%,100% { opacity: 1; r: 3.2; } 50% { opacity: 0.4; r: 4.4; } }
+@media (max-width: 860px) { .hero-art { display: none; } }
+@media (prefers-reduced-motion: reduce) { .hero-art .net-node { animation: none; } }
+.boot { font-family: var(--font-mono); font-size: 13px; color: var(--muted); margin-bottom: 18px; min-height: 60px; }
+.boot .line { display: block; }
+.boot .prompt { color: var(--accent); }
+.hero h1 {
+  font-family: var(--font-mono);
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 700;
+  margin: 0 0 14px;
+  letter-spacing: -0.01em;
+}
+.hero .summary { color: var(--muted); max-width: 62ch; font-size: 16.5px; }
+
+section.block { margin-bottom: 64px; scroll-margin-top: 24px; position: relative; }
+section.block h2 {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  color: var(--text);
+  margin: 0 0 22px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+section.block h2 .path { color: var(--accent); }
+section.block h2 span { display: flex; align-items: center; gap: 10px; }
+.h2-icon { color: var(--accent); width: 18px; height: 18px; }
+
+/* ---------- skills ---------- */
+.skill-group { margin-bottom: 18px; }
+.skill-group .cat { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 7px; }
+.cat-icon { color: var(--accent-2); width: 14px; height: 14px; }
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--text);
+  background: var(--panel);
+}
+
+/* ---------- experience ---------- */
+.entry {
+  position: relative;
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
+  border-radius: 8px;
+  background: var(--panel);
+  margin-bottom: 18px;
+}
+.entry-head { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; }
+.entry-head .org { font-weight: 600; font-size: 15.5px; }
+.entry-head .title { color: var(--accent); font-size: 13.5px; font-family: var(--font-mono); }
+.entry-head .dates { color: var(--muted); font-size: 12.5px; font-family: var(--font-mono); white-space: nowrap; }
+.entry ul { margin: 0; padding-left: 0; list-style: none; }
+.entry li { position: relative; padding-left: 18px; margin-bottom: 8px; color: var(--muted); font-size: 14.5px; }
+.entry li::before { content: "›"; position: absolute; left: 0; color: var(--accent); font-family: var(--font-mono); }
+
+/* ---------- projects ---------- */
+.project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.project-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.project-card .thumb { aspect-ratio: 16/9; background: var(--panel-2); display: flex; align-items: center; justify-content: center; color: var(--muted); font-family: var(--font-mono); font-size: 12px; }
+.project-card .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.project-card .body { padding: 14px 16px 16px; }
+.project-card .p-title { font-weight: 600; font-size: 14.5px; margin-bottom: 6px; }
+.project-card .p-desc { color: var(--muted); font-size: 13.5px; margin-bottom: 10px; }
+.project-card .p-link { font-family: var(--font-mono); font-size: 12.5px; }
+.empty-state {
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+}
+
+/* ---------- certifications / education ---------- */
+.badge-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.badge {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-2); }
+
+.edu-item { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.edu-item:last-child { border-bottom: none; }
+.edu-item .school { font-weight: 600; font-size: 14.5px; }
+.edu-item .degree { color: var(--muted); font-size: 13.5px; }
+.edu-item .years { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+
+/* ---------- contact / footer ---------- */
+.contact-block { display: flex; flex-wrap: wrap; gap: 14px; }
+.contact-pill {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  background: var(--panel);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.contact-form {
+  margin-top: 22px; max-width: 480px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--panel);
+  padding: 20px;
+}
+.contact-form .field { margin-bottom: 14px; }
+.contact-form label { display: block; font-size: 12.5px; color: var(--muted); margin-bottom: 6px; font-family: var(--font-mono); }
+.contact-form input, .contact-form textarea {
+  width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--line);
+  background: var(--panel-2); color: var(--text); font-family: var(--font-sans); font-size: 14px;
+  transition: border-color 0.15s ease;
+}
+.contact-form input:focus, .contact-form textarea:focus { outline: none; border-color: var(--accent); }
+.contact-form textarea { min-height: 100px; resize: vertical; }
+.contact-form button { width: 100%; }
+.form-success {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border: 1px solid var(--accent); color: var(--accent);
+  padding: 10px 14px; border-radius: 6px; font-size: 13.5px; margin-bottom: 14px;
+  font-family: var(--font-mono);
+}
+
+footer { padding: 30px 48px; color: var(--muted); font-size: 12.5px; font-family: var(--font-mono); border-top: 1px solid var(--line); }
+
+/* =========================================================
+   EDIT MODE — only present on editor.html
+   ========================================================= */
+[data-editable="true"] .editable-target { position: relative; }
+
+.edit-fab {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  z-index: 5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+}
+.edit-fab:hover { background: var(--accent); color: var(--bg); }
+
+.section-add-btn {
+  position: absolute;
+  top: 0; right: 0;
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 15px;
+}
+.section-add-btn:hover { background: var(--accent); color: var(--bg); }
+
+.avatar-wrap .edit-fab { top: auto; bottom: -6px; right: -6px; width: 24px; height: 24px; font-size: 12px; }
+
+.add-section-row { display: flex; justify-content: center; margin: 40px 0; }
+.add-section-btn {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  background: var(--panel);
+  border: 1px dashed var(--accent);
+  border-radius: 8px;
+  padding: 12px 20px;
+  cursor: pointer;
+}
+.add-section-btn:hover { background: var(--accent); color: var(--bg); }
+
+/* editor top bar */
+.editor-bar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.editor-bar .left { display: flex; align-items: center; gap: 10px; color: var(--muted); }
+.editor-bar .right { display: flex; align-items: center; gap: 10px; }
+.btn {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  padding: 9px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
+.btn.primary:hover { opacity: 0.85; }
+.btn.danger { border-color: var(--danger); color: var(--danger); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.status-pill { font-size: 11.5px; padding: 4px 9px; border-radius: 20px; border: 1px solid var(--line); color: var(--muted); }
+.status-pill.saved { color: var(--accent); border-color: var(--accent); }
+.status-pill.dirty { color: var(--accent-2); border-color: var(--accent-2); }
+
+/* modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; padding: 20px;
+}
+.modal {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  width: 100%; max-width: 520px; max-height: 86vh; overflow-y: auto;
+  padding: 26px;
+}
+.modal h3 { font-family: var(--font-mono); font-size: 16px; margin: 0 0 18px; }
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12.5px; color: var(--muted); margin-bottom: 6px; font-family: var(--font-mono); }
+.field input, .field textarea, .field select {
+  width: 100%; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--line);
+  background: var(--panel-2); color: var(--text); font-family: var(--font-sans); font-size: 14px;
+}
+.field textarea { min-height: 90px; resize: vertical; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.bullet-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.bullet-row input { flex: 1; }
+.bullet-row button { flex: none; }
+.small-add { font-family: var(--font-mono); font-size: 12px; color: var(--accent); background: none; border: 1px dashed var(--line); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+
+/* token gate */
+.gate {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.gate-box { max-width: 440px; width: 100%; }
+.gate-box h1 { font-family: var(--font-mono); font-size: 20px; margin-bottom: 8px; }
+.gate-box p { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+.gate-box .field { margin-bottom: 16px; }
+</style></head>
+<body>
+<div id="scroll-progress"></div>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
+<div id="root"></div>
+<script>
+/* ============================================================
+   render.js — turns a `data` object into the whole page.
+   Used identically by index.html (editable:false) and
+   editor.html (editable:true). Never edit data.json by hand
+   if you can avoid it — use the editor.
+   ============================================================ */
+
+function esc(str) {
+  if (str === undefined || str === null) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function fabButton(action, label) {
+  return `<button class="edit-fab" data-action="${action}" title="${esc(label)}">${label === 'edit' ? '&#9998;' : '+'}</button>`;
+}
+
+const SECTION_DEFS = [
+  { key: 'experience', path: '~/experience', title: 'Experience', icon: 'briefcase' },
+  { key: 'skills',      path: '~/skills',     title: 'Skills', icon: 'terminal' },
+  { key: 'projects',    path: '~/projects',   title: 'Projects', icon: 'folder' },
+  { key: 'certifications', path: '~/certifications', title: 'Certifications', icon: 'award' },
+  { key: 'education',   path: '~/education',  title: 'Education', icon: 'cap' },
+];
+
+const ICONS = {
+  briefcase: '<path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M3 12h18"/>',
+  terminal: '<polyline points="4 6 9 12 4 18"/><line x1="11" y1="18" x2="20" y2="18"/>',
+  folder: '<path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  award: '<circle cx="12" cy="8" r="6"/><path d="M9 13.5 7 22l5-3 5 3-2-8.5"/>',
+  cap: '<path d="M2 9 12 4l10 5-10 5-10-5z"/><path d="M6 11.5v4c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-4"/>',
+  shield: '<path d="M12 3 4 6v6c0 4.4 3.4 8.3 8 9 4.6-.7 8-4.6 8-9V6z"/>',
+  users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>',
+  layers: '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+  mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/>',
+};
+function icon(name, cls) {
+  const body = ICONS[name] || '';
+  return `<svg class="icon ${cls||''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+}
+
+const SKILL_CAT_ICONS = {
+  'Tools & Platforms': 'terminal',
+  'Security Domains': 'shield',
+  'Frameworks': 'layers',
+  'Soft Skills': 'users',
+};
+
+function renderApp(root, data, editable) {
+  root.setAttribute('data-editable', editable ? 'true' : 'false');
+  document.documentElement.setAttribute('data-theme', data.theme || 'console-teal');
+
+  root.innerHTML = `
+    <div class="app-shell">
+      ${renderSidebar(data, editable)}
+      <div>
+        <main>
+          ${renderHero(data, editable)}
+          <section class="block editable-target reveal" id="experience" data-section="experience">
+            ${sectionHeader('~/experience', 'Experience', editable, 'add-experience', 'briefcase')}
+            <div id="experience-list">${renderExperience(data.experience, editable)}</div>
+          </section>
+
+          <section class="block editable-target reveal" id="skills" data-section="skills">
+            ${sectionHeader('~/skills', 'Skills', editable, 'add-skill-group', 'terminal')}
+            <div id="skills-list">${renderSkills(data.skills, editable)}</div>
+          </section>
+
+          <section class="block editable-target reveal" id="projects" data-section="projects">
+            ${sectionHeader('~/projects', 'Projects', editable, 'add-project', 'folder')}
+            <div id="projects-list">${renderProjects(data.projects, editable)}</div>
+          </section>
+
+          <section class="block editable-target reveal" id="certifications" data-section="certifications">
+            ${sectionHeader('~/certifications', 'Certifications', editable, 'add-cert', 'award')}
+            <div id="cert-list">${renderCerts(data.certifications, editable)}</div>
+          </section>
+
+          <section class="block editable-target reveal" id="education" data-section="education">
+            ${sectionHeader('~/education', 'Education', editable, 'add-education', 'cap')}
+            <div id="education-list">${renderEducation(data.education, editable)}</div>
+          </section>
+
+          ${(data.customSections || []).map((s, i) => renderCustomSection(s, i, editable)).join('')}
+
+          ${editable ? `<div class="add-section-row"><button class="add-section-btn" data-action="add-custom-section">+ Add a new section</button></div>` : ''}
+
+          <section class="block editable-target reveal" id="contact" data-section="contact">
+            ${sectionHeader('~/contact', 'Contact', editable, 'edit-contact', 'mail')}
+            ${renderContact(data.contact, editable)}
+          </section>
+        </main>
+        <footer>&copy; ${new Date().getFullYear()} ${esc(data.profile.name)}. Built with a hand-rolled static portfolio system.</footer>
+      </div>
+    </div>
+  `;
+  initDynamics(root);
+}
+
+function sectionHeader(path, title, editable, addAction, iconName) {
+  return `<h2><span>${iconName ? icon(iconName, 'h2-icon') : ''}<span class="path">${path}</span> ${title}</span>${editable ? `<button class="section-add-btn" data-action="${addAction}" title="Add">+</button>` : ''}</h2>`;
+}
+
+function renderSidebar(data, editable) {
+  const p = data.profile;
+  const navItems = [
+    { path: '~/about', href: '#about' },
+    ...SECTION_DEFS.map(s => ({ path: s.path, href: '#' + s.key })),
+    ...(data.customSections || []).map(s => ({ path: '~/' + (s.id || 'section'), href: '#custom-' + s.id })),
+    { path: '~/contact', href: '#contact' },
+  ];
+  return `
+    <aside class="sidebar">
+      <div class="identity">
+        <div class="avatar-wrap editable-target">
+          <img src="${esc(p.photo || '')}" alt="${esc(p.name)}" onerror="this.style.opacity=0">
+          ${editable ? fabButton('edit-photo', 'edit') : ''}
+        </div>
+        <div class="identity-text">
+          <div class="name">${esc(p.name)}</div>
+          <div class="role">${esc(p.role)}</div>
+        </div>
+      </div>
+      <div class="status-line"><span class="status-dot blink"></span> online — open to opportunities</div>
+      <nav class="nav-tree">
+        ${navItems.map(n => `<a href="${n.href}">${n.path}</a>`).join('')}
+      </nav>
+      <div class="sidebar-contact">
+        ${data.contact.email ? `<a href="mailto:${esc(data.contact.email)}">${esc(data.contact.email)}</a>` : ''}
+        ${data.contact.github ? `<a href="${esc(data.contact.github)}" target="_blank" rel="noopener">GitHub</a>` : ''}
+        ${data.contact.linkedin ? `<a href="${esc(data.contact.linkedin)}" target="_blank" rel="noopener">LinkedIn</a>` : ''}
+      </div>
+      ${editable ? `
+      <div class="theme-picker">
+        theme:
+        <button data-theme-btn="console-teal" class="${data.theme==='console-teal'?'active':''}" title="Console — Teal"></button>
+        <button data-theme-btn="console-amber" class="${data.theme==='console-amber'?'active':''}" title="Console — Amber"></button>
+        <button data-theme-btn="daylight-slate" class="${data.theme==='daylight-slate'?'active':''}" title="Daylight — Slate"></button>
+      </div>` : ''}
+    </aside>
+  `;
+}
+
+function heroArt() {
+  // Decorative network graph — nodes pulse gently, evokes a SOC / network monitoring board.
+  const nodes = [
+    [40, 30], [140, 15], [230, 55], [90, 90], [190, 110], [30, 130], [250, 20]
+  ];
+  const edges = [[0,3],[3,1],[1,2],[2,4],[3,5],[1,6],[4,2]];
+  const pts = nodes.map(([x,y]) => `<circle class="net-node" cx="${x}" cy="${y}" r="3.2"/>`).join('');
+  const lines = edges.map(([a,b]) => `<line class="net-edge" x1="${nodes[a][0]}" y1="${nodes[a][1]}" x2="${nodes[b][0]}" y2="${nodes[b][1]}"/>`).join('');
+  return `<svg class="hero-art" viewBox="0 0 270 140" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${lines}${pts}</svg>`;
+}
+
+function renderHero(data, editable) {
+  const p = data.profile;
+  const bootHtml = (p.boot_lines || []).map((l, i) =>
+    `<span class="line">${i === 0 ? '<span class="prompt">$</span> ' : ''}${esc(l)}</span>`
+  ).join('') + '<span class="line blink">_</span>';
+  return `
+    <div class="hero editable-target" id="about">
+      ${heroArt()}
+      <div class="boot">${bootHtml}</div>
+      <h1>${esc(p.name)}</h1>
+      <p class="summary">${esc(p.summary)}</p>
+      ${editable ? fabButton('edit-profile', 'edit') : ''}
+    </div>
+  `;
+}
+
+function renderExperience(list, editable) {
+  if (!list || !list.length) return emptyState('No experience logged yet.', editable);
+  return list.map((e, i) => `
+    <div class="entry editable-target" data-index="${i}">
+      ${editable ? fabButton('edit-experience', 'edit') : ''}
+      <div class="entry-head">
+        <div>
+          <div class="org">${esc(e.org)}</div>
+          <div class="title">${esc(e.title)}</div>
+        </div>
+        <div class="dates">${esc(e.start)} — ${esc(e.end)}</div>
+      </div>
+      <ul>${(e.bullets || []).map(b => `<li>${esc(b)}</li>`).join('')}</ul>
+    </div>
+  `).join('');
+}
+
+function renderSkills(skills, editable) {
+  const cats = Object.keys(skills || {});
+  if (!cats.length) return emptyState('No skills added yet.', editable);
+  return cats.map(cat => `
+    <div class="skill-group editable-target" data-cat="${esc(cat)}">
+      ${editable ? fabButton('edit-skill-group', 'edit') : ''}
+      <div class="cat">${icon(SKILL_CAT_ICONS[cat] || 'terminal', 'cat-icon')}${esc(cat)}</div>
+      <div class="tag-row">${skills[cat].map(s => `<span class="tag">${esc(s)}</span>`).join('')}</div>
+    </div>
+  `).join('');
+}
+
+function renderProjects(list, editable) {
+  if (!list || !list.length) {
+    return `<div class="empty-state">no projects logged yet${editable ? ' — click the + above to add your first one' : ''}</div>`;
+  }
+  return `<div class="project-grid">${list.map((p, i) => `
+    <div class="project-card editable-target" data-index="${i}">
+      ${editable ? fabButton('edit-project', 'edit') : ''}
+      <div class="thumb">${p.image ? `<img src="${esc(p.image)}" alt="${esc(p.title)}">` : 'no image'}</div>
+      <div class="body">
+        <div class="p-title">${esc(p.title)}</div>
+        <div class="p-desc">${esc(p.description)}</div>
+        ${p.link ? `<a class="p-link" href="${esc(p.link)}" target="_blank" rel="noopener">view →</a>` : ''}
+      </div>
+    </div>
+  `).join('')}</div>`;
+}
+
+function renderCerts(list, editable) {
+  if (!list || !list.length) return emptyState('No certifications yet.', editable);
+  return `<div class="badge-row">${list.map((c, i) => `
+    <div class="badge editable-target" data-index="${i}">
+      ${editable ? fabButton('edit-cert', 'edit') : ''}
+      <span class="dot"></span>
+      ${c.link ? `<a href="${esc(c.link)}" target="_blank" rel="noopener">${esc(c.name)}</a>` : esc(c.name)}
+      ${c.date ? `<span style="color:var(--muted)">— ${esc(c.date)}</span>` : ''}
+    </div>
+  `).join('')}</div>`;
+}
+
+function renderEducation(list, editable) {
+  if (!list || !list.length) return emptyState('No education added yet.', editable);
+  return list.map((e, i) => `
+    <div class="edu-item editable-target" data-index="${i}">
+      ${editable ? fabButton('edit-education', 'edit') : ''}
+      <div class="school">${esc(e.school)}${e.location ? ' — ' + esc(e.location) : ''}</div>
+      <div class="degree">${esc(e.degree)}</div>
+      <div class="years">${esc(e.start)} – ${esc(e.end)}</div>
+    </div>
+  `).join('');
+}
+
+function renderCustomSection(section, index, editable) {
+  return `
+    <section class="block editable-target" data-section="custom-${section.id}" id="custom-${section.id}">
+      ${sectionHeader('~/' + (section.id || 'section'), section.title || 'Section', editable, 'add-custom-item')}
+      <div class="custom-items" data-custom-index="${index}">
+        ${(section.items || []).map((it, i) => `
+          <div class="entry editable-target" data-custom-index="${index}" data-item-index="${i}">
+            ${editable ? fabButton('edit-custom-item', 'edit') : ''}
+            <div class="entry-head">
+              <div>
+                <div class="org">${esc(it.heading)}</div>
+                <div class="title">${esc(it.subheading || '')}</div>
+              </div>
+            </div>
+            ${it.body ? `<p style="color:var(--muted);font-size:14.5px;margin:8px 0 0;">${esc(it.body)}</p>` : ''}
+          </div>
+        `).join('') || emptyState('Nothing here yet.', editable)}
+      </div>
+      ${editable ? `<div style="margin-top:10px;"><button class="btn danger" data-action="remove-custom-section" data-custom-index="${index}">Remove this section</button></div>` : ''}
+    </section>
+  `;
+}
+
+function renderContact(contact, editable) {
+  const sent = typeof location !== 'undefined' && location.search.includes('sent=true');
+  const nextUrl = typeof location !== 'undefined' ? location.href.split('?')[0] + '?sent=true' : '';
+  return `
+    <div class="contact-block editable-target">
+      ${editable ? fabButton('edit-contact', 'edit') : ''}
+      ${contact.email ? `<a class="contact-pill" href="mailto:${esc(contact.email)}">${esc(contact.email)}</a>` : ''}
+      ${contact.phone ? `<span class="contact-pill">${esc(contact.phone)}</span>` : ''}
+      ${contact.linkedin ? `<a class="contact-pill" href="${esc(contact.linkedin)}" target="_blank" rel="noopener">LinkedIn</a>` : ''}
+      ${contact.github ? `<a class="contact-pill" href="${esc(contact.github)}" target="_blank" rel="noopener">GitHub</a>` : ''}
+    </div>
+    ${contact.email ? `
+    <form class="contact-form" action="https://formsubmit.co/${esc(contact.email)}" method="POST">
+      <input type="hidden" name="_subject" value="New message from your portfolio site">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_next" value="${esc(nextUrl)}">
+      <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+      ${sent ? `<div class="form-success">✓ Message sent — thanks for reaching out.</div>` : ''}
+      <div class="field"><label>Name</label><input type="text" name="name" required></div>
+      <div class="field"><label>Email</label><input type="email" name="email" required></div>
+      <div class="field"><label>Message</label><textarea name="message" required></textarea></div>
+      <button class="btn primary" type="submit">Send message</button>
+    </form>` : ''}
+  `;
+}
+
+function emptyState(msg, editable) {
+  return `<div class="empty-state">${esc(msg)}${editable ? ' — use the + above to add one' : ''}</div>`;
+}
+
+/* ============================================================
+   dynamics — scroll-reveal, scrollspy nav highlighting,
+   progress bar, back-to-top. Re-initialised after every render
+   since editor.html rebuilds the DOM on every edit.
+   ============================================================ */
+let _revealObserver = null;
+let _spyObserver = null;
+
+function initDynamics(root) {
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // reveal-on-scroll
+  if (_revealObserver) _revealObserver.disconnect();
+  const revealEls = root.querySelectorAll('.reveal');
+  if (reduceMotion) {
+    revealEls.forEach(el => el.classList.add('in-view'));
+  } else {
+    _revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          _revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    revealEls.forEach(el => _revealObserver.observe(el));
+  }
+
+  // scrollspy — highlight the nav-tree link for whichever section is in view
+  if (_spyObserver) _spyObserver.disconnect();
+  const navLinks = root.querySelectorAll('.nav-tree a');
+  const sections = Array.from(navLinks).map(a => document.getElementById(a.getAttribute('href').slice(1))).filter(Boolean);
+  if (sections.length) {
+    _spyObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+        }
+      });
+    }, { rootMargin: '0px 0px -72% 0px', threshold: 0 });
+    sections.forEach(sec => _spyObserver.observe(sec));
+  }
+
+  initChrome();
+}
+
+function initChrome() {
+  if (window.__chromeInit) return;
+  window.__chromeInit = true;
+  const bar = document.getElementById('scroll-progress');
+  const topBtn = document.getElementById('back-to-top');
+  if (!bar && !topBtn) return;
+  const onScroll = () => {
+    const h = document.documentElement;
+    const scrolled = h.scrollTop;
+    const max = h.scrollHeight - h.clientHeight;
+    const pct = max > 0 ? (scrolled / max) * 100 : 0;
+    if (bar) bar.style.width = pct + '%';
+    if (topBtn) topBtn.classList.toggle('show', scrolled > 500);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  if (topBtn) topBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  onScroll();
+}
+
+const DATA = {
+  "theme": "console-teal",
+  "profile": {
+    "name": "Abhay Raj Mathur",
+    "role": "Cybersecurity Analyst · SOC L1",
+    "photo": "images/profile.jpg",
+    "location": "India",
+    "summary": "Cybersecurity professional with hands-on experience in SOC L1, Endpoint Security, EDR, SIEM, DLP, PAM, and incident investigation. Skilled in threat detection, alert triage, root-cause analysis, and security operations using enterprise security tools.",
+    "boot_lines": [
+      "whoami",
+      "Abhay Raj Mathur — SOC L1 / Endpoint Security",
+      "status: investigating alerts, hardening endpoints, hunting threats"
+    ]
+  },
+  "contact": {
+    "email": "abhayrajmathur666@gmail.com",
+    "phone": "+91-93050-70421",
+    "linkedin": "https://www.linkedin.com/in/abhay-raj-mathur/",
+    "github": "https://github.com/arjunlk24/"
+  },
+  "skills": {
+    "Tools & Platforms": ["Cortex XDR", "EDR", "Forcepoint DLP", "Sectona PAM", "Wazuh", "VirusTotal", "Wireshark", "Nmap", "Tcpdump", "OSINT", "Angry IP Scanner", "Metasploit"],
+    "Security Domains": ["SOC L1", "SIEM", "EDR", "Endpoint Security", "Incident Response", "DLP", "PAM", "Networking", "Malware Analysis", "Forensics"],
+    "Frameworks": ["CHM", "Diamond Intrusion Analysis", "Cyber Kill Chain", "MITRE ATT&CK"],
+    "Soft Skills": ["Leadership", "Problem Solving", "Team Player", "Adaptability"]
+  },
+  "experience": [
+    {
+      "org": "Bima Sugam Indian Federation",
+      "title": "Endpoint Security Intern",
+      "start": "April 2026",
+      "end": "September 2026",
+      "bullets": [
+        "Managed enterprise endpoint security using Palo Alto Cortex XDR — endpoint monitoring, agent health, alert investigation, policy tuning, and IOC/application blocking.",
+        "Investigated endpoint alerts through root-cause analysis, process/causality-chain analysis, file hashes and artifacts via VirusTotal, and contributed to SIEM implementation across Linux/Windows servers.",
+        "Supported security and compliance activities including CERT-In advisories, CVE analysis, UAR/NSAR, ISO/IEC 27001, endpoint remediation, and team coordination.",
+        "Managed privileged access security using Sectona PAM — asset onboarding, user-asset mapping, access policies, patching, and troubleshooting.",
+        "Troubleshot device access connectivity via PAM and EDR agent health by investigating firewall logs."
+      ]
+    }
+  ],
+  "projects": [],
+  "certifications": [
+    { "name": "Certified Ethical Hacker V12 (CEH)", "issuer": "", "date": "", "link": "" }
+  ],
+  "education": [
+    {
+      "school": "Lovely Professional University",
+      "location": "Punjab",
+      "degree": "Bachelor of Technology — Computer Science and Engineering",
+      "start": "2022",
+      "end": "2026"
+    },
+    {
+      "school": "Maharana Pratap Education Center",
+      "location": "Kanpur",
+      "degree": "Intermediate",
+      "start": "2020",
+      "end": "2021"
+    }
+  ]
+}
+;
+renderApp(document.getElementById('root'), DATA, false);
+</script>
+</body></html>

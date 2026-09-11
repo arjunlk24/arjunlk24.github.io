@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editor — Portfolio</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="assets/css/themes.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="editor-bar" id="editor-bar" style="display:none;">
+  <div class="left">
+    <strong>editor mode</strong>
+    <span class="status-pill saved" id="status-pill">saved</span>
+  </div>
+  <div class="right">
+    <button class="btn" id="preview-btn">Preview</button>
+    <button class="btn" id="save-btn">Save Changes</button>
+    <button class="btn primary" id="deploy-btn">Deploy</button>
+    <button class="btn" id="logout-btn" title="Disconnect GitHub">⏻</button>
+  </div>
+</div>
+
+<div id="gate" class="gate" style="display:none;"></div>
+<div id="root" style="display:none;"></div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/github.js"></script>
+<script src="assets/js/render.js"></script>
+<script src="assets/js/editor.js"></script>
+</body>
+</html>

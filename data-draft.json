@@ -1,0 +1,62 @@
+{
+  "theme": "console-teal",
+  "profile": {
+    "name": "Abhay Raj Mathur",
+    "role": "Cybersecurity Analyst · SOC L1",
+    "photo": "images/profile.jpg",
+    "location": "India",
+    "summary": "Cybersecurity professional with hands-on experience in SOC L1, Endpoint Security, EDR, SIEM, DLP, PAM, and incident investigation. Skilled in threat detection, alert triage, root-cause analysis, and security operations using enterprise security tools.",
+    "boot_lines": [
+      "whoami",
+      "Abhay Raj Mathur — SOC L1 / Endpoint Security",
+      "status: investigating alerts, hardening endpoints, hunting threats"
+    ]
+  },
+  "contact": {
+    "email": "abhayrajmathur666@gmail.com",
+    "phone": "+91-93050-70421",
+    "linkedin": "https://www.linkedin.com/in/abhay-raj-mathur/",
+    "github": "https://github.com/arjunlk24/"
+  },
+  "skills": {
+    "Tools & Platforms": ["Cortex XDR", "EDR", "Forcepoint DLP", "Sectona PAM", "Wazuh", "VirusTotal", "Wireshark", "Nmap", "Tcpdump", "OSINT", "Angry IP Scanner", "Metasploit"],
+    "Security Domains": ["SOC L1", "SIEM", "EDR", "Endpoint Security", "Incident Response", "DLP", "PAM", "Networking", "Malware Analysis", "Forensics"],
+    "Frameworks": ["CHM", "Diamond Intrusion Analysis", "Cyber Kill Chain", "MITRE ATT&CK"],
+    "Soft Skills": ["Leadership", "Problem Solving", "Team Player", "Adaptability"]
+  },
+  "experience": [
+    {
+      "org": "Bima Sugam Indian Federation",
+      "title": "Endpoint Security Intern",
+      "start": "April 2026",
+      "end": "September 2026",
+      "bullets": [
+        "Managed enterprise endpoint security using Palo Alto Cortex XDR — endpoint monitoring, agent health, alert investigation, policy tuning, and IOC/application blocking.",
+        "Investigated endpoint alerts through root-cause analysis, process/causality-chain analysis, file hashes and artifacts via VirusTotal, and contributed to SIEM implementation across Linux/Windows servers.",
+        "Supported security and compliance activities including CERT-In advisories, CVE analysis, UAR/NSAR, ISO/IEC 27001, endpoint remediation, and team coordination.",
+        "Managed privileged access security using Sectona PAM — asset onboarding, user-asset mapping, access policies, patching, and troubleshooting.",
+        "Troubleshot device access connectivity via PAM and EDR agent health by investigating firewall logs."
+      ]
+    }
+  ],
+  "projects": [],
+  "certifications": [
+    { "name": "Certified Ethical Hacker V12 (CEH)", "issuer": "", "date": "", "link": "" }
+  ],
+  "education": [
+    {
+      "school": "Lovely Professional University",
+      "location": "Punjab",
+      "degree": "Bachelor of Technology — Computer Science and Engineering",
+      "start": "2022",
+      "end": "2026"
+    },
+    {
+      "school": "Maharana Pratap Education Center",
+      "location": "Kanpur",
+      "degree": "Intermediate",
+      "start": "2020",
+      "end": "2021"
+    }
+  ]
+}

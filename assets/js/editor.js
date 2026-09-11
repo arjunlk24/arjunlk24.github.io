@@ -30,6 +30,10 @@ function rerender() {
 /* ---------------- boot: token gate then load data ---------------- */
 async function boot() {
   if (!GH.hasToken()) { showGate(); return; }
+  // We have a saved token — show the app shell right away, then load.
+  gate.style.display = 'none';
+  root.style.display = '';
+  document.getElementById('editor-bar').style.display = '';
   await loadAndRender(true);
 }
 
@@ -75,6 +79,15 @@ async function loadAndRender(fromRemote) {
       DATA = JSON.parse((draft || live).content);
     }
   } catch (e) {
+    const msg = String(e.message || '');
+    const isAuthError = msg.includes('401') || msg.includes('403') || msg.includes('Bad credentials');
+    if (isAuthError) {
+      // The saved token is dead (deleted/expired/wrong permissions) — don't
+      // keep using it silently. Clear it and ask to reconnect.
+      GH.clearToken();
+      showGate('Your saved token no longer works (it may have been deleted, expired, or lacks "Contents: Read and write" permission). Please paste a working token.');
+      return;
+    }
     const cached = localStorage.getItem(LOCAL_CACHE_KEY);
     if (cached) { DATA = JSON.parse(cached); alert('Could not reach GitHub, showing your last local draft instead.\n' + e.message); }
     else { showGate('Could not load your content: ' + e.message); return; }
@@ -85,13 +98,25 @@ async function loadAndRender(fromRemote) {
 }
 
 /* ---------------- save / deploy ---------------- */
+function handleGithubError(prefix, e) {
+  const msg = String(e.message || '');
+  const isAuthError = msg.includes('401') || msg.includes('403') || msg.includes('Bad credentials') || msg.includes('not accessible by personal access token');
+  if (isAuthError) {
+    GH.clearToken();
+    alert(prefix + ' — your token isn\'t working (deleted, expired, or missing "Contents: Read and write" permission). Please reconnect with a working token.');
+    showGate('Please paste a working token to continue.');
+  } else {
+    alert(prefix + ': ' + e.message);
+  }
+}
+
 async function saveChanges() {
   setBusy(true, 'saving…');
   try {
     await GH.putFile(SITE_CONFIG.draftDataPath, JSON.stringify(DATA, null, 2), 'Save draft from editor');
     setDirty(false);
   } catch (e) {
-    alert('Save failed: ' + e.message);
+    handleGithubError('Save failed', e);
   }
   setBusy(false);
 }
@@ -105,7 +130,7 @@ async function deploy() {
     setDirty(false);
     alert('Deployed! Your live site will update within about a minute.');
   } catch (e) {
-    alert('Deploy failed: ' + e.message);
+    handleGithubError('Deploy failed', e);
   }
   setBusy(false);
 }
@@ -164,8 +189,8 @@ root.addEventListener('click', (e) => {
   const btn = e.target.closest('[data-action]');
   if (!btn) return;
   const action = btn.getAttribute('data-action');
-  const entryEl = btn.closest('[data-index]');
-  const idx = entryEl ? parseInt(entryEl.getAttribute('data-index'), 10) : null;
+  const entryEl = btn.closest('[data-index], [data-cat]');
+  const idx = (entryEl && entryEl.hasAttribute('data-index')) ? parseInt(entryEl.getAttribute('data-index'), 10) : null;
   const custIdx = btn.getAttribute('data-custom-index') !== null
     ? parseInt(btn.getAttribute('data-custom-index'), 10) : null;
 

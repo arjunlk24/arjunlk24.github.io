@@ -96,6 +96,7 @@ function renderApp(root, data, editable) {
     </div>
   `;
   initDynamics(root);
+  initTyping(root, data.profile.typing_phrases);
 }
 
 function sectionHeader(path, title, editable, addAction, iconName) {
@@ -158,12 +159,14 @@ function renderHero(data, editable) {
   const bootHtml = (p.boot_lines || []).map((l, i) =>
     `<span class="line">${i === 0 ? '<span class="prompt">$</span> ' : ''}${esc(l)}</span>`
   ).join('') + '<span class="line blink">_</span>';
+  const hasTyping = Array.isArray(p.typing_phrases) && p.typing_phrases.length > 0;
   return `
     <div class="hero editable-target" id="about">
       ${heroArt()}
       <div class="boot">${bootHtml}</div>
       <h1>${esc(p.name)}</h1>
       <p class="summary">${esc(p.summary)}</p>
+      ${hasTyping ? `<div class="typing-line"><span class="prompt">&gt;</span><span id="typing-text"></span><span class="blink">_</span></div>` : ''}
       ${editable ? fabButton('edit-profile', 'edit') : ''}
     </div>
   `;
@@ -337,6 +340,7 @@ function initDynamics(root) {
   }
 
   initChrome();
+  document.querySelector('.sidebar')?.classList.toggle('open', _sidebarOpen);
 }
 
 function initChrome() {
@@ -344,7 +348,6 @@ function initChrome() {
   window.__chromeInit = true;
   const bar = document.getElementById('scroll-progress');
   const topBtn = document.getElementById('back-to-top');
-  if (!bar && !topBtn) return;
   const onScroll = () => {
     const h = document.documentElement;
     const scrolled = h.scrollTop;
@@ -356,4 +359,52 @@ function initChrome() {
   window.addEventListener('scroll', onScroll, { passive: true });
   if (topBtn) topBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   onScroll();
+  initMobileMenu();
+}
+
+/* ---------- mobile drawer sidebar ---------- */
+let _sidebarOpen = false;
+function initMobileMenu() {
+  const btn = document.getElementById('menu-toggle');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  if (!btn || window.__menuInit) return;
+  window.__menuInit = true;
+  function setOpen(v) {
+    _sidebarOpen = v;
+    document.querySelector('.sidebar')?.classList.toggle('open', v);
+    backdrop?.classList.toggle('show', v);
+  }
+  btn.addEventListener('click', () => setOpen(!_sidebarOpen));
+  backdrop?.addEventListener('click', () => setOpen(false));
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.nav-tree a')) setOpen(false);
+  });
+}
+
+/* ---------- typing effect ---------- */
+let _typingTimer = null;
+function initTyping(root, phrases) {
+  if (_typingTimer) { clearTimeout(_typingTimer); _typingTimer = null; }
+  const el = root.querySelector('#typing-text');
+  if (!el || !Array.isArray(phrases) || !phrases.length) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    el.textContent = phrases[0];
+    return;
+  }
+  let phraseIdx = 0, charIdx = 0, deleting = false;
+  function tick() {
+    const current = phrases[phraseIdx % phrases.length];
+    if (!deleting) {
+      charIdx++;
+      el.textContent = current.slice(0, charIdx);
+      if (charIdx >= current.length) { deleting = true; _typingTimer = setTimeout(tick, 1400); return; }
+      _typingTimer = setTimeout(tick, 65);
+    } else {
+      charIdx--;
+      el.textContent = current.slice(0, charIdx);
+      if (charIdx <= 0) { deleting = false; phraseIdx++; _typingTimer = setTimeout(tick, 400); return; }
+      _typingTimer = setTimeout(tick, 35);
+    }
+  }
+  tick();
 }

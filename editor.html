@@ -9,6 +9,11 @@
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
+<video class="site-bg" autoplay muted loop playsinline>
+  <source src="assets/media/back.webm" type="video/webm">
+  <source src="assets/media/back.mp4" type="video/mp4">
+</video>
+<div class="site-bg-overlay"></div>
 
 <div class="editor-bar" id="editor-bar" style="display:none;">
   <div class="left">
@@ -24,6 +29,8 @@
 </div>
 
 <div id="scroll-progress"></div>
+<button id="menu-toggle" aria-label="Open menu">☰</button>
+<div id="sidebar-backdrop"></div>
 <button id="back-to-top" aria-label="Back to top">↑</button>
 <div id="gate" class="gate" style="display:none;"></div>
 <div id="root" style="display:none;"></div>

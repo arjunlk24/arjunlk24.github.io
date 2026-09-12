@@ -248,6 +248,8 @@ function modalProfile() {
     ${field('Summary', 'f-summary', p.summary, 'textarea')}
     <div class="field"><label>Intro lines (one per line — shown as the typing intro)</label>
       <textarea id="f-boot">${esc((p.boot_lines||[]).join('\n'))}</textarea></div>
+    <div class="field"><label>Typing effect phrases (one per line — cycles continuously under your summary)</label>
+      <textarea id="f-typing">${esc((p.typing_phrases||[]).join('\n'))}</textarea></div>
     <div class="modal-actions">
       <button class="btn" id="cancel">Cancel</button>
       <button class="btn primary" id="save">Save</button>
@@ -270,6 +272,7 @@ function modalProfile() {
     p.role = document.getElementById('f-role').value;
     p.summary = document.getElementById('f-summary').value;
     p.boot_lines = document.getElementById('f-boot').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    p.typing_phrases = document.getElementById('f-typing').value.split('\n').map(s=>s.trim()).filter(Boolean);
     setDirty(true); closeModal(); rerender();
   };
 }

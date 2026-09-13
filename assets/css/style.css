@@ -14,18 +14,39 @@ body {
 html { background: var(--bg); }
 
 /* ---------- space background ---------- */
+/* ---------- space background (same technique as original portfolio) ---------- */
 .site-bg {
-  position: fixed; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; z-index: -3; filter: brightness(1.9) contrast(1.2) saturate(1.1);
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: -3;
+  mix-blend-mode: lighten;
+  pointer-events: none;
+  filter: brightness(1.9) contrast(1.2) saturate(1.1);
+}
+@media (max-aspect-ratio: 16/9) {
+  .site-bg { width: auto; height: 100%; }
+}
+@media (min-aspect-ratio: 16/9) {
+  .site-bg { width: 100%; height: auto; }
 }
 .site-blackhole-box {
-  position: fixed; top: -8%; left: 58%; transform: translateX(-50%);
-  width: min(1500px, 180%); z-index: -2;
-  mix-blend-mode: lighten; pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: -2;
+  mix-blend-mode: lighten;
+  pointer-events: none;
+  overflow: hidden;
 }
-.site-blackhole-box video { width: 100%; display: block; }
+.site-blackhole-box video {
+  width: 100%;
+  margin-top: -23.5%;
+  display: block;
+}
 @media (max-width: 860px) {
-  .site-blackhole-box { width: 300%; top: -3%; left: 50%; }
+  .site-blackhole-box video { margin-top: -10%; }
 }
 .site-bg-overlay {
   position: fixed; inset: 0; z-index: -1; pointer-events: none;

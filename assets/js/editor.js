@@ -1,10 +1,11 @@
 /* ============================================================
-   editor.js — powers editor.html
+   editor.js — powers editor.html: every + and pencil button,
+   the Save Changes / Deploy buttons, and image uploads.
    ============================================================ */
 
-let DATA = null;
-let DIRTY = false;
-const LOCAL_CACHE_KEY = 'portfolio_local_cache_v2';
+let DATA = null;          // the in-memory content object
+let DIRTY = false;        // true once something changed since last save
+const LOCAL_CACHE_KEY = 'portfolio_local_cache';
 
 const root = document.getElementById('root');
 const gate = document.getElementById('gate');
@@ -16,17 +17,20 @@ function setDirty(v) {
   if (v) { pill.textContent = 'unsaved changes'; pill.className = 'status-pill dirty'; }
   else { pill.textContent = 'saved'; pill.className = 'status-pill saved'; }
 }
+
 function cacheLocally() {
   try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(DATA)); } catch (e) {}
 }
+
 function rerender() {
   renderApp(root, DATA, true);
   cacheLocally();
 }
 
-/* ---------------- boot ---------------- */
+/* ---------------- boot: token gate then load data ---------------- */
 async function boot() {
   if (!GH.hasToken()) { showGate(); return; }
+  // We have a saved token — show the app shell right away, then load.
   gate.style.display = 'none';
   root.style.display = '';
   document.getElementById('editor-bar').style.display = '';
@@ -39,10 +43,14 @@ function showGate(prefillError) {
   document.getElementById('editor-bar').style.display = 'none';
   gate.innerHTML = `
     <div class="gate-box">
-      <h1>Connect to GitHub</h1>
-      <p>Paste your Personal Access Token. It's stored only in this browser and is only ever sent to api.github.com.</p>
-      <div class="field"><label>GitHub token</label><input type="password" id="token-input" placeholder="github_pat_..."></div>
-      ${prefillError ? `<p style="color:#e06666;font-size:13px;">${esc(prefillError)}</p>` : ''}
+      <h1>&gt; connect to GitHub</h1>
+      <p>Paste your Personal Access Token. It's stored only in this browser and is only ever sent to api.github.com.
+      See the README for how to create one in under a minute.</p>
+      <div class="field">
+        <label>GitHub token</label>
+        <input type="password" id="token-input" placeholder="github_pat_...">
+      </div>
+      ${prefillError ? `<p style="color:var(--danger);font-size:13px;">${esc(prefillError)}</p>` : ''}
       <button class="btn primary" id="token-submit">Connect</button>
     </div>
   `;
@@ -74,19 +82,17 @@ async function loadAndRender(fromRemote) {
     const msg = String(e.message || '');
     const isAuthError = msg.includes('401') || msg.includes('403') || msg.includes('Bad credentials');
     if (isAuthError) {
+      // The saved token is dead (deleted/expired/wrong permissions) — don't
+      // keep using it silently. Clear it and ask to reconnect.
       GH.clearToken();
-      showGate('Your saved token no longer works. Please paste a working token.');
+      showGate('Your saved token no longer works (it may have been deleted, expired, or lacks "Contents: Read and write" permission). Please paste a working token.');
       return;
     }
     const cached = localStorage.getItem(LOCAL_CACHE_KEY);
     if (cached) { DATA = JSON.parse(cached); alert('Could not reach GitHub, showing your last local draft instead.\n' + e.message); }
     else { showGate('Could not load your content: ' + e.message); return; }
   }
-  DATA.infoCards = DATA.infoCards || [];
-  DATA.projects = DATA.projects || [];
-  DATA.skills = DATA.skills || { cyberText: '', programmingText: '', techLogos: [] };
-  DATA.certifications = DATA.certifications || { images: [] };
-  DATA.socials = DATA.socials || {};
+  DATA.customSections = DATA.customSections || [];
   setDirty(false);
   rerender();
 }
@@ -97,20 +103,24 @@ function handleGithubError(prefix, e) {
   const isAuthError = msg.includes('401') || msg.includes('403') || msg.includes('Bad credentials') || msg.includes('not accessible by personal access token');
   if (isAuthError) {
     GH.clearToken();
-    alert(prefix + ' — your token isn\'t working. Please reconnect.');
+    alert(prefix + ' — your token isn\'t working (deleted, expired, or missing "Contents: Read and write" permission). Please reconnect with a working token.');
     showGate('Please paste a working token to continue.');
   } else {
     alert(prefix + ': ' + e.message);
   }
 }
+
 async function saveChanges() {
   setBusy(true, 'saving…');
   try {
     await GH.putFile(SITE_CONFIG.draftDataPath, JSON.stringify(DATA, null, 2), 'Save draft from editor');
     setDirty(false);
-  } catch (e) { handleGithubError('Save failed', e); }
+  } catch (e) {
+    handleGithubError('Save failed', e);
+  }
   setBusy(false);
 }
+
 async function deploy() {
   if (!confirm('Publish these changes to your live portfolio now?')) return;
   setBusy(true, 'deploying…');
@@ -119,9 +129,12 @@ async function deploy() {
     await GH.putFile(SITE_CONFIG.draftDataPath, JSON.stringify(DATA, null, 2), 'Sync draft after deploy');
     setDirty(false);
     alert('Deployed! Your live site will update within about a minute.');
-  } catch (e) { handleGithubError('Deploy failed', e); }
+  } catch (e) {
+    handleGithubError('Deploy failed', e);
+  }
   setBusy(false);
 }
+
 function setBusy(isBusy, label) {
   document.querySelectorAll('#editor-bar .btn').forEach(b => b.disabled = isBusy);
   const pill = document.getElementById('status-pill');
@@ -136,17 +149,26 @@ function openModal(html) {
   overlay.innerHTML = `<div class="modal">${html}</div>`;
   overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
   document.body.appendChild(overlay);
+  return overlay;
 }
-function closeModal() { const m = document.getElementById('active-modal'); if (m) m.remove(); }
+function closeModal() {
+  const m = document.getElementById('active-modal');
+  if (m) m.remove();
+}
+
 function field(label, id, value, type) {
-  if (type === 'textarea') return `<div class="field"><label>${esc(label)}</label><textarea id="${id}">${esc(value||'')}</textarea></div>`;
-  return `<div class="field"><label>${esc(label)}</label><input id="${id}" type="text" value="${esc(value||'')}"></div>`;
+  if (type === 'textarea') {
+    return `<div class="field"><label>${esc(label)}</label><textarea id="${id}">${esc(value || '')}</textarea></div>`;
+  }
+  return `<div class="field"><label>${esc(label)}</label><input id="${id}" type="text" value="${esc(value || '')}"></div>`;
 }
+
 function imageField(label, id, currentSrc) {
   return `<div class="field"><label>${esc(label)}</label>
     ${currentSrc ? `<img src="${esc(currentSrc)}" style="max-width:100px;border-radius:6px;margin-bottom:8px;display:block;">` : ''}
     <input id="${id}" type="file" accept="image/*"></div>`;
 }
+
 async function readImageFile(inputEl) {
   const f = inputEl.files && inputEl.files[0];
   if (!f) return null;
@@ -157,345 +179,335 @@ async function readImageFile(inputEl) {
     r.readAsDataURL(f);
   });
 }
-function slug(str) { return (str||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'item'; }
 
-// asterisk convention: *word* -> gradient span
-function parseGradientText(str) {
-  const parts = [];
-  const re = /\*([^*]+)\*|([^*]+)/g;
-  let m;
-  while ((m = re.exec(str)) !== null) {
-    if (m[1] !== undefined) parts.push({ text: m[1], gradient: true });
-    else if (m[2] !== undefined) parts.push({ text: m[2] });
-  }
-  return parts;
-}
-function toGradientSource(parts) {
-  return (parts||[]).map(p => p.gradient ? `*${p.text}*` : p.text).join('');
+function slug(str) {
+  return (str || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'item';
 }
 
-/* ---------------- action router ---------------- */
+/* ---------------- action router (event delegation) ---------------- */
 root.addEventListener('click', (e) => {
   const btn = e.target.closest('[data-action]');
   if (!btn) return;
   const action = btn.getAttribute('data-action');
-  const entryEl = btn.closest('[data-index]');
-  const idx = entryEl ? parseInt(entryEl.getAttribute('data-index'), 10) : null;
+  const entryEl = btn.closest('[data-index], [data-cat]');
+  const idx = (entryEl && entryEl.hasAttribute('data-index')) ? parseInt(entryEl.getAttribute('data-index'), 10) : null;
+  const custIdx = btn.getAttribute('data-custom-index') !== null
+    ? parseInt(btn.getAttribute('data-custom-index'), 10) : null;
 
   const handlers = {
     'edit-profile': () => modalProfile(),
-    'edit-socials': () => modalSocials(),
-    'edit-infocard': () => modalInfoCard(idx),
+    'edit-photo': () => modalProfile(),
+    'add-experience': () => modalExperience(null),
+    'edit-experience': () => modalExperience(idx),
+    'add-skill-group': () => modalSkillGroup(null),
+    'edit-skill-group': () => modalSkillGroup(entryEl.getAttribute('data-cat')),
     'add-project': () => modalProject(null),
     'edit-project': () => modalProject(idx),
-    'edit-skills': () => modalSkills(),
-    'edit-techlogos': () => modalTechLogos(),
-    'add-techlogo': () => modalTechLogos(),
-    'add-cert': () => modalAddCert(),
-    'remove-last-cert': () => removeLastCert(),
+    'add-cert': () => modalCert(null),
+    'edit-cert': () => modalCert(idx),
+    'add-education': () => modalEducation(null),
+    'edit-education': () => modalEducation(idx),
     'edit-contact': () => modalContact(),
+    'add-custom-section': () => modalCustomSection(),
+    'remove-custom-section': () => removeCustomSection(custIdx),
+    'add-custom-item': () => modalCustomItem(custIdx, null),
+    'edit-custom-item': () => modalCustomItem(custIdx, parseInt(btn.closest('[data-item-index]').getAttribute('data-item-index'), 10)),
   };
   if (handlers[action]) handlers[action]();
 });
 
+/* theme picker + top bar wiring done once on init */
 function wireChrome() {
   document.getElementById('save-btn').onclick = saveChanges;
   document.getElementById('deploy-btn').onclick = deploy;
   document.getElementById('logout-btn').onclick = () => {
-    if (confirm('Disconnect this browser from GitHub?')) { GH.clearToken(); location.reload(); }
+    if (confirm('Disconnect this browser from GitHub? (your saved draft on GitHub is unaffected)')) {
+      GH.clearToken();
+      location.reload();
+    }
   };
   document.getElementById('preview-btn').onclick = () => window.open('index.html', '_blank');
+
+  root.addEventListener('click', (e) => {
+    const tbtn = e.target.closest('[data-theme-btn]');
+    if (!tbtn) return;
+    DATA.theme = tbtn.getAttribute('data-theme-btn');
+    setDirty(true);
+    rerender();
+  });
 }
 
-/* ---------------- modals ---------------- */
+/* ---------------- individual modals ---------------- */
 function modalProfile() {
   const p = DATA.profile;
   openModal(`
-    <h3>Edit hero / profile</h3>
-    ${imageField('Logo (top-left)', 'f-logo', p.logo)}
-    ${field('First name', 'f-first', p.firstName)}
-    ${field('Last name', 'f-last', p.lastName)}
-    ${field('Tagline (pill above heading)', 'f-tagline', p.tagline)}
-    <div class="field"><label>Hero heading — wrap words in *asterisks* for the gradient color</label>
-      <input id="f-title" type="text" value="${esc(toGradientSource(p.heroTitle))}"></div>
-    ${field('Summary paragraph', 'f-summary', p.heroSummary, 'textarea')}
-    ${field('CV button text', 'f-ctatext', p.ctaText)}
-    ${field('CV link (URL to your resume PDF, optional)', 'f-ctalink', p.ctaLink)}
-    <div class="modal-actions"><button class="btn" id="cancel">Cancel</button><button class="btn primary" id="save">Save</button></div>
+    <h3>Edit profile</h3>
+    ${imageField('Photo', 'f-photo', p.photo)}
+    ${field('Name', 'f-name', p.name)}
+    ${field('Role / headline', 'f-role', p.role)}
+    ${field('Summary', 'f-summary', p.summary, 'textarea')}
+    <div class="field"><label>Intro lines (one per line — shown as the typing intro)</label>
+      <textarea id="f-boot">${esc((p.boot_lines||[]).join('\n'))}</textarea></div>
+    <div class="field"><label>Typing effect phrases (one per line — cycles continuously under your summary)</label>
+      <textarea id="f-typing">${esc((p.typing_phrases||[]).join('\n'))}</textarea></div>
+    <div class="modal-actions">
+      <button class="btn" id="cancel">Cancel</button>
+      <button class="btn primary" id="save">Save</button>
+    </div>
   `);
   document.getElementById('cancel').onclick = closeModal;
   document.getElementById('save').onclick = async () => {
-    const img = await readImageFile(document.getElementById('f-logo'));
+    const fileInput = document.getElementById('f-photo');
+    const img = await readImageFile(fileInput);
     if (img) {
-      setBusy(true, 'uploading logo…');
+      setBusy(true, 'uploading photo…');
       try {
-        const path = `${SITE_CONFIG.imagesFolder}/profile3.png`;
-        await GH.putImage(path, img.dataUrl, 'Update logo');
-        p.logo = path + '?v=' + Date.now();
-      } catch (e) { alert('Logo upload failed: ' + e.message); }
+        const path = `${SITE_CONFIG.imagesFolder}/profile.jpg`;
+        await GH.putImage(path, img.dataUrl, 'Update profile photo');
+        p.photo = path + '?v=' + Date.now();
+      } catch (e) { alert('Photo upload failed: ' + e.message); }
       setBusy(false);
     }
-    p.firstName = document.getElementById('f-first').value;
-    p.lastName = document.getElementById('f-last').value;
-    p.tagline = document.getElementById('f-tagline').value;
-    p.heroTitle = parseGradientText(document.getElementById('f-title').value);
-    p.heroSummary = document.getElementById('f-summary').value;
-    p.ctaText = document.getElementById('f-ctatext').value;
-    p.ctaLink = document.getElementById('f-ctalink').value;
+    p.name = document.getElementById('f-name').value;
+    p.role = document.getElementById('f-role').value;
+    p.summary = document.getElementById('f-summary').value;
+    p.boot_lines = document.getElementById('f-boot').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    p.typing_phrases = document.getElementById('f-typing').value.split('\n').map(s=>s.trim()).filter(Boolean);
     setDirty(true); closeModal(); rerender();
   };
 }
 
-function modalSocials() {
-  const s = DATA.socials;
+function modalExperience(idx) {
+  const isNew = idx === null;
+  const e = isNew ? { org:'', title:'', start:'', end:'', bullets:[] } : DATA.experience[idx];
   openModal(`
-    <h3>Edit social links</h3>
-    ${field('YouTube URL', 'f-yt', s.youtube)}
-    ${field('GitHub URL', 'f-gh', s.github)}
-    ${field('LinkedIn URL', 'f-li', s.linkedin)}
-    ${field('Instagram URL', 'f-ig', s.instagram)}
-    <div class="modal-actions"><button class="btn" id="cancel">Cancel</button><button class="btn primary" id="save">Save</button></div>
+    <h3>${isNew ? 'Add experience' : 'Edit experience'}</h3>
+    ${field('Organization', 'f-org', e.org)}
+    ${field('Title', 'f-title', e.title)}
+    ${field('Start', 'f-start', e.start)}
+    ${field('End', 'f-end', e.end)}
+    <div class="field"><label>Bullet points (one per line)</label><textarea id="f-bullets">${esc((e.bullets||[]).join('\n'))}</textarea></div>
+    <div class="modal-actions">
+      ${!isNew ? '<button class="btn danger" id="del" style="margin-right:auto;">Delete</button>' : ''}
+      <button class="btn" id="cancel">Cancel</button>
+      <button class="btn primary" id="save">Save</button>
+    </div>
   `);
   document.getElementById('cancel').onclick = closeModal;
+  if (!isNew) document.getElementById('del').onclick = () => {
+    if (confirm('Delete this experience entry?')) { DATA.experience.splice(idx,1); setDirty(true); closeModal(); rerender(); }
+  };
   document.getElementById('save').onclick = () => {
-    s.youtube = document.getElementById('f-yt').value;
-    s.github = document.getElementById('f-gh').value;
-    s.linkedin = document.getElementById('f-li').value;
-    s.instagram = document.getElementById('f-ig').value;
+    const obj = {
+      org: document.getElementById('f-org').value,
+      title: document.getElementById('f-title').value,
+      start: document.getElementById('f-start').value,
+      end: document.getElementById('f-end').value,
+      bullets: document.getElementById('f-bullets').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    };
+    if (isNew) DATA.experience.push(obj); else DATA.experience[idx] = obj;
     setDirty(true); closeModal(); rerender();
   };
 }
 
-function modalInfoCard(idx) {
-  const c = DATA.infoCards[idx];
-  const media = c.media || { type: 'none' };
+function modalSkillGroup(catName) {
+  const isNew = catName === null;
+  const current = isNew ? [] : DATA.skills[catName];
   openModal(`
-    <h3>Edit card</h3>
-    ${field('Heading', 'f-heading', c.heading)}
-    ${field('Text', 'f-text', c.text, 'textarea')}
-    <div class="field"><label>Media type</label>
-      <select id="f-mtype">
-        <option value="none" ${media.type==='none'?'selected':''}>None</option>
-        <option value="image" ${media.type==='image'?'selected':''}>Image</option>
-        <option value="video" ${media.type==='video'?'selected':''}>Video (already in repo)</option>
-      </select>
+    <h3>${isNew ? 'Add skill category' : 'Edit skill category'}</h3>
+    ${field('Category name', 'f-cat', catName || '')}
+    <div class="field"><label>Skills (one per line)</label><textarea id="f-skills">${esc((current||[]).join('\n'))}</textarea></div>
+    <div class="modal-actions">
+      ${!isNew ? '<button class="btn danger" id="del" style="margin-right:auto;">Delete category</button>' : ''}
+      <button class="btn" id="cancel">Cancel</button>
+      <button class="btn primary" id="save">Save</button>
     </div>
-    <div id="media-fields">
-      ${media.type==='image' ? imageField('Upload image', 'f-image', media.src) : ''}
-      ${media.type==='video' ? field('Video path (e.g. assets/media/glob.mp4)', 'f-video', media.src) : ''}
-    </div>
-    ${field('Button text (optional)', 'f-btntext', c.buttonText)}
-    ${field('Button link (optional, e.g. #contact)', 'f-btnhref', c.buttonHref)}
-    <div class="modal-actions"><button class="btn" id="cancel">Cancel</button><button class="btn primary" id="save">Save</button></div>
   `);
-  document.getElementById('f-mtype').onchange = (e) => {
-    const t = e.target.value;
-    const box = document.getElementById('media-fields');
-    if (t === 'image') box.innerHTML = imageField('Upload image', 'f-image', media.type==='image'?media.src:'');
-    else if (t === 'video') box.innerHTML = field('Video path (e.g. assets/media/glob.mp4)', 'f-video', media.type==='video'?media.src:'');
-    else box.innerHTML = '';
-  };
   document.getElementById('cancel').onclick = closeModal;
-  document.getElementById('save').onclick = async () => {
-    c.heading = document.getElementById('f-heading').value;
-    c.text = document.getElementById('f-text').value;
-    c.buttonText = document.getElementById('f-btntext').value;
-    c.buttonHref = document.getElementById('f-btnhref').value;
-    const type = document.getElementById('f-mtype').value;
-    if (type === 'none') { c.media = { type: 'none' }; }
-    else if (type === 'video') { c.media = { type: 'video', src: document.getElementById('f-video').value }; }
-    else if (type === 'image') {
-      const fileInput = document.getElementById('f-image');
-      const img = fileInput ? await readImageFile(fileInput) : null;
-      let src = media.type === 'image' ? media.src : '';
-      if (img) {
-        setBusy(true, 'uploading image…');
-        try {
-          const path = `${SITE_CONFIG.imagesFolder}/card-${idx}-${Date.now()}.jpg`;
-          await GH.putImage(path, img.dataUrl, 'Update card image');
-          src = path;
-        } catch (e) { alert('Image upload failed: ' + e.message); }
-        setBusy(false);
-      }
-      c.media = { type: 'image', src };
-    }
+  if (!isNew) document.getElementById('del').onclick = () => {
+    if (confirm('Delete this skill category?')) { delete DATA.skills[catName]; setDirty(true); closeModal(); rerender(); }
+  };
+  document.getElementById('save').onclick = () => {
+    const newName = document.getElementById('f-cat').value.trim();
+    const list = document.getElementById('f-skills').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    if (!newName) return alert('Category name is required.');
+    if (!isNew && newName !== catName) delete DATA.skills[catName];
+    DATA.skills[newName] = list;
     setDirty(true); closeModal(); rerender();
   };
 }
 
 function modalProject(idx) {
   const isNew = idx === null;
-  const p = isNew ? { title:'', titleHighlight:'', titleRest:'', description:'', media:{type:'none'}, link:'' } : DATA.projects[idx];
-  const media = p.media || { type: 'none' };
+  const p = isNew ? { title:'', description:'', link:'', image:'' } : DATA.projects[idx];
   openModal(`
     <h3>${isNew ? 'Add project' : 'Edit project'}</h3>
-    <div class="field"><label>Title — wrap the first part in *asterisks* for the gradient color</label>
-      <input id="f-title" type="text" value="${esc((p.titleHighlight?`*${p.titleHighlight}*`:'') + (p.titleRest||(!p.titleHighlight?p.title:'')))}"></div>
+    ${imageField('Screenshot', 'f-image', p.image)}
+    ${field('Title', 'f-title', p.title)}
     ${field('Description', 'f-desc', p.description, 'textarea')}
-    <div class="field"><label>Media type</label>
-      <select id="f-mtype">
-        <option value="none" ${media.type==='none'?'selected':''}>None</option>
-        <option value="image" ${media.type==='image'?'selected':''}>Image</option>
-        <option value="video" ${media.type==='video'?'selected':''}>Video (already in repo)</option>
-      </select>
-    </div>
-    <div id="media-fields">
-      ${media.type==='image' ? imageField('Upload image', 'f-image', media.src) : ''}
-      ${media.type==='video' ? field('Video path (e.g. assets/media/project1.mp4)', 'f-video', media.src) : ''}
-    </div>
     ${field('Link (optional)', 'f-link', p.link)}
     <div class="modal-actions">
       ${!isNew ? '<button class="btn danger" id="del" style="margin-right:auto;">Delete</button>' : ''}
-      <button class="btn" id="cancel">Cancel</button><button class="btn primary" id="save">Save</button>
+      <button class="btn" id="cancel">Cancel</button>
+      <button class="btn primary" id="save">Save</button>
     </div>
   `);
-  document.getElementById('f-mtype').onchange = (e) => {
-    const t = e.target.value;
-    const box = document.getElementById('media-fields');
-    if (t === 'image') box.innerHTML = imageField('Upload image', 'f-image', media.type==='image'?media.src:'');
-    else if (t === 'video') box.innerHTML = field('Video path', 'f-video', media.type==='video'?media.src:'');
-    else box.innerHTML = '';
-  };
   document.getElementById('cancel').onclick = closeModal;
   if (!isNew) document.getElementById('del').onclick = () => {
     if (confirm('Delete this project?')) { DATA.projects.splice(idx,1); setDirty(true); closeModal(); rerender(); }
   };
   document.getElementById('save').onclick = async () => {
-    const parts = parseGradientText(document.getElementById('f-title').value);
-    const highlight = parts.find(x=>x.gradient);
+    const title = document.getElementById('f-title').value;
+    let image = p.image;
+    const fileInput = document.getElementById('f-image');
+    const img = await readImageFile(fileInput);
+    if (img) {
+      setBusy(true, 'uploading image…');
+      try {
+        const path = `${SITE_CONFIG.imagesFolder}/${slug(title)}-${Date.now()}.jpg`;
+        await GH.putImage(path, img.dataUrl, 'Add project image: ' + title);
+        image = path;
+      } catch (e) { alert('Image upload failed: ' + e.message); }
+      setBusy(false);
+    }
     const obj = {
-      title: parts.map(x=>x.text).join(''),
-      titleHighlight: highlight ? highlight.text : '',
-      titleRest: parts.filter(x=>!x.gradient).map(x=>x.text).join(''),
+      title,
       description: document.getElementById('f-desc').value,
       link: document.getElementById('f-link').value,
-      media: { type: 'none' },
+      image,
     };
-    const type = document.getElementById('f-mtype').value;
-    if (type === 'video') obj.media = { type: 'video', src: document.getElementById('f-video').value };
-    else if (type === 'image') {
-      const fileInput = document.getElementById('f-image');
-      const img = fileInput ? await readImageFile(fileInput) : null;
-      let src = media.type === 'image' ? media.src : '';
-      if (img) {
-        setBusy(true, 'uploading image…');
-        try {
-          const path = `${SITE_CONFIG.imagesFolder}/project-${slug(obj.title)}-${Date.now()}.jpg`;
-          await GH.putImage(path, img.dataUrl, 'Add project image');
-          src = path;
-        } catch (e) { alert('Image upload failed: ' + e.message); }
-        setBusy(false);
-      }
-      obj.media = { type: 'image', src };
-    }
     if (isNew) DATA.projects.push(obj); else DATA.projects[idx] = obj;
     setDirty(true); closeModal(); rerender();
   };
 }
 
-function modalSkills() {
-  const s = DATA.skills;
+function modalCert(idx) {
+  const isNew = idx === null;
+  const c = isNew ? { name:'', issuer:'', date:'', link:'' } : DATA.certifications[idx];
   openModal(`
-    <h3>Edit skills text</h3>
-    ${imageField('Brain graphic', 'f-brain', DATA.profile.brainImage || 'images/digital_brain.png')}
-    ${field('Cyber Security description', 'f-cyber', s.cyberText, 'textarea')}
-    ${field('Programming description', 'f-prog', s.programmingText, 'textarea')}
-    <div class="modal-actions"><button class="btn" id="cancel">Cancel</button><button class="btn primary" id="save">Save</button></div>
-  `);
-  document.getElementById('cancel').onclick = closeModal;
-  document.getElementById('save').onclick = async () => {
-    const img = await readImageFile(document.getElementById('f-brain'));
-    if (img) {
-      setBusy(true, 'uploading image…');
-      try {
-        const path = `${SITE_CONFIG.imagesFolder}/digital_brain.png`;
-        await GH.putImage(path, img.dataUrl, 'Update brain graphic');
-        DATA.profile.brainImage = path + '?v=' + Date.now();
-      } catch (e) { alert('Upload failed: ' + e.message); }
-      setBusy(false);
-    }
-    s.cyberText = document.getElementById('f-cyber').value;
-    s.programmingText = document.getElementById('f-prog').value;
-    setDirty(true); closeModal(); rerender();
-  };
-}
-
-function modalTechLogos() {
-  const logos = DATA.skills.techLogos || [];
-  openModal(`
-    <h3>Tech stack icons</h3>
-    <div id="logo-list" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
-      ${logos.map((src,i) => `<div style="position:relative;"><img src="${esc(src)}" style="width:56px;height:56px;object-fit:contain;border:1px solid #333;border-radius:8px;background:#111;">
-        <button data-i="${i}" class="btn danger remove-logo" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;padding:0;border-radius:50%;font-size:11px;">x</button></div>`).join('') || '<span style="color:#888;font-size:13px;">None yet</span>'}
+    <h3>${isNew ? 'Add certification' : 'Edit certification'}</h3>
+    ${field('Name', 'f-name', c.name)}
+    ${field('Date (optional)', 'f-date', c.date)}
+    ${field('Link (optional)', 'f-link', c.link)}
+    <div class="modal-actions">
+      ${!isNew ? '<button class="btn danger" id="del" style="margin-right:auto;">Delete</button>' : ''}
+      <button class="btn" id="cancel">Cancel</button>
+      <button class="btn primary" id="save">Save</button>
     </div>
-    ${imageField('Add a new icon', 'f-newlogo', null)}
-    <div class="modal-actions"><button class="btn" id="cancel">Cancel</button><button class="btn primary" id="save">Add & Save</button></div>
   `);
   document.getElementById('cancel').onclick = closeModal;
-  document.querySelectorAll('.remove-logo').forEach(b => b.onclick = () => {
-    const i = parseInt(b.getAttribute('data-i'), 10);
-    logos.splice(i, 1);
-    setDirty(true); closeModal(); rerender();
-  });
-  document.getElementById('save').onclick = async () => {
-    const img = await readImageFile(document.getElementById('f-newlogo'));
-    if (img) {
-      setBusy(true, 'uploading icon…');
-      try {
-        const path = `${SITE_CONFIG.imagesFolder}/logo-${Date.now()}.png`;
-        await GH.putImage(path, img.dataUrl, 'Add tech logo');
-        logos.push(path);
-      } catch (e) { alert('Upload failed: ' + e.message); }
-      setBusy(false);
-    }
-    DATA.skills.techLogos = logos;
+  if (!isNew) document.getElementById('del').onclick = () => {
+    if (confirm('Delete this certification?')) { DATA.certifications.splice(idx,1); setDirty(true); closeModal(); rerender(); }
+  };
+  document.getElementById('save').onclick = () => {
+    const obj = { name: document.getElementById('f-name').value, date: document.getElementById('f-date').value, link: document.getElementById('f-link').value };
+    if (isNew) DATA.certifications.push(obj); else DATA.certifications[idx] = obj;
     setDirty(true); closeModal(); rerender();
   };
 }
 
-function modalAddCert() {
+function modalEducation(idx) {
+  const isNew = idx === null;
+  const e = isNew ? { school:'', location:'', degree:'', start:'', end:'' } : DATA.education[idx];
   openModal(`
-    <h3>Add certificate</h3>
-    ${imageField('Certificate image', 'f-cert', null)}
-    <div class="modal-actions"><button class="btn" id="cancel">Cancel</button><button class="btn primary" id="save">Add</button></div>
+    <h3>${isNew ? 'Add education' : 'Edit education'}</h3>
+    ${field('School', 'f-school', e.school)}
+    ${field('Location', 'f-loc', e.location)}
+    ${field('Degree', 'f-degree', e.degree)}
+    ${field('Start year', 'f-start', e.start)}
+    ${field('End year', 'f-end', e.end)}
+    <div class="modal-actions">
+      ${!isNew ? '<button class="btn danger" id="del" style="margin-right:auto;">Delete</button>' : ''}
+      <button class="btn" id="cancel">Cancel</button>
+      <button class="btn primary" id="save">Save</button>
+    </div>
   `);
   document.getElementById('cancel').onclick = closeModal;
-  document.getElementById('save').onclick = async () => {
-    const img = await readImageFile(document.getElementById('f-cert'));
-    if (!img) return closeModal();
-    setBusy(true, 'uploading certificate…');
-    try {
-      const path = `${SITE_CONFIG.imagesFolder}/cert-${Date.now()}.jpg`;
-      await GH.putImage(path, img.dataUrl, 'Add certificate');
-      DATA.certifications.images.push(path);
-    } catch (e) { alert('Upload failed: ' + e.message); }
-    setBusy(false);
+  if (!isNew) document.getElementById('del').onclick = () => {
+    if (confirm('Delete this education entry?')) { DATA.education.splice(idx,1); setDirty(true); closeModal(); rerender(); }
+  };
+  document.getElementById('save').onclick = () => {
+    const obj = {
+      school: document.getElementById('f-school').value,
+      location: document.getElementById('f-loc').value,
+      degree: document.getElementById('f-degree').value,
+      start: document.getElementById('f-start').value,
+      end: document.getElementById('f-end').value,
+    };
+    if (isNew) DATA.education.push(obj); else DATA.education[idx] = obj;
     setDirty(true); closeModal(); rerender();
   };
-}
-function removeLastCert() {
-  if (!DATA.certifications.images.length) return;
-  if (!confirm('Remove the most recently added certificate?')) return;
-  DATA.certifications.images.pop();
-  setDirty(true); rerender();
 }
 
 function modalContact() {
   const c = DATA.contact;
   openModal(`
     <h3>Edit contact</h3>
+    ${field('Email', 'f-email', c.email)}
     ${field('Phone', 'f-phone', c.phone)}
-    ${field('Email (also used for the contact form)', 'f-email', c.email)}
-    ${field('LinkedIn URL', 'f-li', c.linkedin)}
-    ${field('GitHub URL', 'f-gh', c.github)}
-    <div class="modal-actions"><button class="btn" id="cancel">Cancel</button><button class="btn primary" id="save">Save</button></div>
+    ${field('LinkedIn URL', 'f-linkedin', c.linkedin)}
+    ${field('GitHub URL', 'f-github', c.github)}
+    <div class="modal-actions">
+      <button class="btn" id="cancel">Cancel</button>
+      <button class="btn primary" id="save">Save</button>
+    </div>
   `);
   document.getElementById('cancel').onclick = closeModal;
   document.getElementById('save').onclick = () => {
-    c.phone = document.getElementById('f-phone').value;
     c.email = document.getElementById('f-email').value;
-    c.linkedin = document.getElementById('f-li').value;
-    c.github = document.getElementById('f-gh').value;
+    c.phone = document.getElementById('f-phone').value;
+    c.linkedin = document.getElementById('f-linkedin').value;
+    c.github = document.getElementById('f-github').value;
+    setDirty(true); closeModal(); rerender();
+  };
+}
+
+function modalCustomSection() {
+  openModal(`
+    <h3>Add a new section</h3>
+    ${field('Section title (e.g. "Publications", "Volunteering")', 'f-title', '')}
+    <div class="modal-actions">
+      <button class="btn" id="cancel">Cancel</button>
+      <button class="btn primary" id="save">Create section</button>
+    </div>
+  `);
+  document.getElementById('cancel').onclick = closeModal;
+  document.getElementById('save').onclick = () => {
+    const title = document.getElementById('f-title').value.trim();
+    if (!title) return alert('Give the section a title.');
+    DATA.customSections.push({ id: slug(title), title, items: [] });
+    setDirty(true); closeModal(); rerender();
+  };
+}
+
+function removeCustomSection(custIdx) {
+  if (!confirm('Remove this entire section and everything in it?')) return;
+  DATA.customSections.splice(custIdx, 1);
+  setDirty(true); rerender();
+}
+
+function modalCustomItem(custIdx, itemIdx) {
+  const section = DATA.customSections[custIdx];
+  const isNew = itemIdx === null;
+  const it = isNew ? { heading:'', subheading:'', body:'' } : section.items[itemIdx];
+  openModal(`
+    <h3>${isNew ? 'Add item to "' + esc(section.title) + '"' : 'Edit item'}</h3>
+    ${field('Heading', 'f-heading', it.heading)}
+    ${field('Subheading (optional)', 'f-sub', it.subheading)}
+    ${field('Details (optional)', 'f-body', it.body, 'textarea')}
+    <div class="modal-actions">
+      ${!isNew ? '<button class="btn danger" id="del" style="margin-right:auto;">Delete</button>' : ''}
+      <button class="btn" id="cancel">Cancel</button>
+      <button class="btn primary" id="save">Save</button>
+    </div>
+  `);
+  document.getElementById('cancel').onclick = closeModal;
+  if (!isNew) document.getElementById('del').onclick = () => {
+    if (confirm('Delete this item?')) { section.items.splice(itemIdx,1); setDirty(true); closeModal(); rerender(); }
+  };
+  document.getElementById('save').onclick = () => {
+    const obj = { heading: document.getElementById('f-heading').value, subheading: document.getElementById('f-sub').value, body: document.getElementById('f-body').value };
+    if (isNew) section.items.push(obj); else section.items[itemIdx] = obj;
     setDirty(true); closeModal(); rerender();
   };
 }

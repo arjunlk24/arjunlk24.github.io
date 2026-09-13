@@ -14,21 +14,17 @@ body {
 html { background: var(--bg); }
 
 /* ---------- space background ---------- */
-/* ---------- space background (same technique as original portfolio) ---------- */
+/* ---------- space background (full, reliable coverage) ---------- */
 .site-bg {
   position: fixed;
-  right: 0;
-  bottom: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   z-index: -3;
   mix-blend-mode: lighten;
   pointer-events: none;
   filter: brightness(1.9) contrast(1.2) saturate(1.1);
-}
-@media (max-aspect-ratio: 16/9) {
-  .site-bg { width: auto; height: 100%; }
-}
-@media (min-aspect-ratio: 16/9) {
-  .site-bg { width: 100%; height: auto; }
 }
 .site-bg-overlay {
   position: fixed; inset: 0; z-index: -1; pointer-events: none;

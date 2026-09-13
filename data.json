@@ -1,68 +1,89 @@
 {
-  "theme": "console-teal",
   "profile": {
-    "name": "Abhay Raj Mathur",
-    "role": "Cybersecurity Analyst · SOC L1",
-    "photo": "images/profile.jpg",
-    "location": "India",
-    "summary": "Cybersecurity professional with hands-on experience in SOC L1, Endpoint Security, EDR, SIEM, DLP, PAM, and incident investigation. Skilled in threat detection, alert triage, root-cause analysis, and security operations using enterprise security tools.",
-    "boot_lines": [
-      "whoami",
-      "Abhay Raj Mathur — SOC L1 / Endpoint Security",
-      "status: investigating alerts, hardening endpoints, hunting threats"
+    "firstName": "Abhay Raj",
+    "lastName": "Mathur",
+    "logo": "images/profile3.png",
+    "tagline": "Cyber Security Enthusiast",
+    "heroTitle": [
+      { "text": "Cyber " },
+      { "text": "Security", "gradient": true },
+      { "text": " | Penetration" },
+      { "text": " Tester", "gradient": true },
+      { "text": " | " },
+      { "text": "Programming", "gradient": true }
     ],
-    "typing_phrases": [
-      "SOC L1 Analyst",
-      "Endpoint Security Specialist",
-      "Threat Hunter",
-      "Incident Responder"
-    ]
+    "heroSummary": "Cybersecurity professional with hands-on experience in SOC L1, Endpoint Security, EDR, SIEM, DLP, PAM, and incident investigation. Skilled in threat detection, alert triage, root-cause analysis, and security operations using enterprise security tools. Certified Ethical Hacker (CEH v12), always learning and building.",
+    "ctaText": "Download CV",
+    "ctaLink": ""
   },
-  "contact": {
-    "email": "abhayrajmathur666@gmail.com",
-    "phone": "+91-93050-70421",
+  "socials": {
+    "youtube": "",
+    "github": "https://github.com/arjunlk24/",
     "linkedin": "https://www.linkedin.com/in/abhay-raj-mathur/",
-    "github": "https://github.com/arjunlk24/"
+    "instagram": ""
   },
-  "skills": {
-    "Tools & Platforms": ["Cortex XDR", "EDR", "Forcepoint DLP", "Sectona PAM", "Wazuh", "VirusTotal", "Wireshark", "Nmap", "Tcpdump", "OSINT", "Angry IP Scanner", "Metasploit"],
-    "Security Domains": ["SOC L1", "SIEM", "EDR", "Endpoint Security", "Incident Response", "DLP", "PAM", "Networking", "Malware Analysis", "Forensics"],
-    "Frameworks": ["CHM", "Diamond Intrusion Analysis", "Cyber Kill Chain", "MITRE ATT&CK"],
-    "Soft Skills": ["Leadership", "Problem Solving", "Team Player", "Adaptability"]
-  },
-  "experience": [
+  "infoCards": [
     {
-      "org": "Bima Sugam Indian Federation",
-      "title": "Endpoint Security Intern",
-      "start": "April 2026",
-      "end": "September 2026",
-      "bullets": [
-        "Managed enterprise endpoint security using Palo Alto Cortex XDR — endpoint monitoring, agent health, alert investigation, policy tuning, and IOC/application blocking.",
-        "Investigated endpoint alerts through root-cause analysis, process/causality-chain analysis, file hashes and artifacts via VirusTotal, and contributed to SIEM implementation across Linux/Windows servers.",
-        "Supported security and compliance activities including CERT-In advisories, CVE analysis, UAR/NSAR, ISO/IEC 27001, endpoint remediation, and team coordination.",
-        "Managed privileged access security using Sectona PAM — asset onboarding, user-asset mapping, access policies, patching, and troubleshooting.",
-        "Troubleshot device access connectivity via PAM and EDR agent health by investigating firewall logs."
-      ]
-    }
-  ],
-  "projects": [],
-  "certifications": [
-    { "name": "Certified Ethical Hacker V12 (CEH)", "issuer": "", "date": "", "link": "" }
-  ],
-  "education": [
-    {
-      "school": "Lovely Professional University",
-      "location": "Punjab",
-      "degree": "Bachelor of Technology — Computer Science and Engineering",
-      "start": "2022",
-      "end": "2026"
+      "heading": "Hi there, I'm Abhay Raj Mathur",
+      "text": "With hands-on experience in SOC L1 and Endpoint Security, I investigate alerts, triage incidents, and harden endpoints using enterprise-grade EDR and SIEM tools.",
+      "media": { "type": "image", "src": "images/profile2.png" }
     },
     {
-      "school": "Maharana Pratap Education Center",
-      "location": "Kanpur",
-      "degree": "Intermediate",
-      "start": "2020",
-      "end": "2021"
+      "heading": "Tech Stack",
+      "text": "I work across Cortex XDR, Wazuh, Wireshark, Nmap, Metasploit, and Sectona PAM, alongside Python, C, C++, Bash, and Java for scripting and tooling.",
+      "media": { "type": "image", "src": "images/grid2.png" }
+    },
+    {
+      "heading": "I'm very flexible with time zones, communication & location",
+      "text": "",
+      "media": { "type": "video", "src": "assets/media/glob.mp4" },
+      "buttonText": "Contact me",
+      "buttonHref": "#contact"
+    },
+    {
+      "heading": "More about me",
+      "text": "I hold the Certified Ethical Hacker (CEH v12) certification and continually build my knowledge through hands-on labs, CTFs, and hunting the latest CVEs and advisories.",
+      "media": { "type": "image", "src": "images/grid4.png" }
     }
-  ]
+  ],
+  "projects": [
+    {
+      "title": "Raspberry",
+      "titleHighlight": "Raspberry",
+      "titleRest": " Spy Pi",
+      "description": "Conceptualized and integrated a Raspberry Pi-based spy system with discreet surveillance capabilities, real-time monitoring, and data collection. Administered remote access, basic logging, and lightweight data collection, then optimized system performance and reliability.",
+      "media": { "type": "none" },
+      "link": ""
+    },
+    {
+      "title": "Hash",
+      "titleHighlight": "Hash",
+      "titleRest": "Prac",
+      "description": "Developed a Python-based hashing tool that generates MD5, SHA-1, SHA-256, and other cryptographic hashes for educational and penetration-testing purposes, letting students practice real-world hash-cracking techniques on generated outputs across multiple algorithms.",
+      "media": { "type": "none" },
+      "link": ""
+    },
+    {
+      "title": "Website for Water Availability",
+      "titleHighlight": "Website",
+      "titleRest": " for Water Availability",
+      "description": "Built a fully responsive website using HTML and CSS to raise awareness about water availability, with organized layouts and clear typography presenting water-conservation information effectively.",
+      "media": { "type": "none" },
+      "link": ""
+    }
+  ],
+  "skills": {
+    "cyberText": "I have hands-on experience in Cortex XDR, EDR, Wazuh, Wireshark, Nmap, Metasploit, and Sectona PAM, applying MITRE ATT&CK and the Cyber Kill Chain to investigate and respond to threats.",
+    "programmingText": "I'm comfortable in Python, C, C++, Bash, and Java — building tools for automation, hashing, and lightweight security utilities.",
+    "techLogos": []
+  },
+  "certifications": {
+    "images": []
+  },
+  "contact": {
+    "phone": "+91-93050-70421",
+    "email": "abhayrajmathur666@gmail.com",
+    "linkedin": "https://www.linkedin.com/in/abhay-raj-mathur/",
+    "github": "https://github.com/arjunlk24/"
+  }
 }

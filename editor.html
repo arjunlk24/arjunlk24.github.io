@@ -5,33 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Editor — Portfolio</title>
 <meta name="robots" content="noindex, nofollow">
-<link rel="stylesheet" href="assets/css/themes.css">
 <link rel="stylesheet" href="assets/css/style.css">
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 <body>
-<video class="site-bg" autoplay muted loop playsinline>
-  <source src="assets/media/galaxy.webm" type="video/webm">
-  <source src="assets/media/galaxy.mp4" type="video/mp4">
-</video>
-<div class="site-bg-overlay"></div>
-
 <div class="editor-bar" id="editor-bar" style="display:none;">
-  <div class="left">
-    <strong>editor mode</strong>
-    <span class="status-pill saved" id="status-pill">saved</span>
-  </div>
+  <div class="left"><strong>editor mode</strong><span class="status-pill saved" id="status-pill">saved</span></div>
   <div class="right">
     <button class="btn" id="preview-btn">Preview</button>
     <button class="btn" id="save-btn">Save Changes</button>
     <button class="btn primary" id="deploy-btn">Deploy</button>
-    <button class="btn" id="logout-btn" title="Disconnect GitHub">⏻</button>
+    <button class="btn" id="logout-btn" title="Disconnect GitHub">&#9211;</button>
   </div>
 </div>
-
 <div id="scroll-progress"></div>
-<button id="menu-toggle" aria-label="Open menu">☰</button>
-<div id="sidebar-backdrop"></div>
-<button id="back-to-top" aria-label="Back to top">↑</button>
+<button id="back-to-top" aria-label="Back to top">&#8593;</button>
 <div id="gate" class="gate" style="display:none;"></div>
 <div id="root" style="display:none;"></div>
 

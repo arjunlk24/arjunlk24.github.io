@@ -1,13 +1,3 @@
-/* ============================================================
-   github.js — talks to GitHub's API so "Save" and "Deploy" work
-   without git, a terminal, or any install on your computer.
-
-   Your token is stored ONLY in this browser (localStorage) and is
-   sent ONLY to api.github.com over https. It is never sent
-   anywhere else, never saved by me, and never leaves your device
-   except to talk to GitHub directly.
-   ============================================================ */
-
 const TOKEN_KEY = 'portfolio_gh_token';
 
 const GH = {
@@ -32,24 +22,21 @@ const GH = {
     return res.status === 204 ? null : res.json();
   },
 
-  // Verifies the token actually works and can see the repo.
   async verify() {
     return this._request('');
   },
 
-  // Reads a file's current text content + sha (sha is required to update it).
   async getFile(path) {
     try {
       const data = await this._request(`/contents/${path}?ref=${SITE_CONFIG.branch}`);
       const content = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
       return { content, sha: data.sha };
     } catch (e) {
-      if (String(e.message).includes('404')) return null; // file doesn't exist yet
+      if (String(e.message).includes('404')) return null;
       throw e;
     }
   },
 
-  // Creates or updates a text file (JSON, HTML, etc).
   async putFile(path, textContent, message) {
     const existing = await this.getFile(path);
     const body = {
@@ -61,7 +48,6 @@ const GH = {
     return this._request(`/contents/${path}`, { method: 'PUT', body: JSON.stringify(body) });
   },
 
-  // Uploads an image from a data URL (e.g. from an <input type=file>).
   async putImage(path, dataUrl, message) {
     const base64 = dataUrl.split(',')[1];
     const existing = await this.getFile(path).catch(() => null);

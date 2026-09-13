@@ -1,81 +1,41 @@
-# Your portfolio — setup guide (no coding needed)
+# Your portfolio — setup guide
 
-This is a one-time setup. After this, updating your portfolio forever = clicking + and ✏️ buttons, then "Save Changes" or "Deploy". No terminal, no git, no installing anything on your computer.
+This is your original galaxy-themed design, fully rebuilt with real content from your resume, working bugs fixed, and the same edit/Save/Deploy system as before.
 
----
+## What's real vs. placeholder right now
 
-## Step 1 — Create the repository
+**Using your real assets:**
+- `galaxy.mp4` → background starfield (whole site)
+- `blackhole.mp4` → glowing accent at the top
+- `glob.mp4` → the "flexible with time zones" card
+- `digital_brain.png` → Skills section graphic
+- `grid2.png` → Tech Stack card image
 
-1. Go to https://github.com/new (make sure you're logged in as **arjunlk24**).
-2. **Repository name:** type exactly `arjunlk24.github.io` (this exact name is what makes GitHub host it for free at `https://arjunlk24.github.io`).
-3. Set it to **Public**.
-4. Do **not** check "Add a README" — leave everything else unchecked.
-5. Click **Create repository**.
+**Placeholders you should replace via the editor:**
+- Your logo/profile photos (currently "ARM" initials placeholders) — edit via the ✏️ next to your name, and the ✏️ on the "Hi there" card
+- The "More about me" card image (currently a plain "CEH v12" placeholder)
+- The 3 project cards — currently show a dashed "add media" box. Add a screenshot for each via ✏️ → Media type → Image
+- Tech stack logo icons (currently empty) — add via Skills ✏️ → the tech-logo manager
+- Certificates — currently empty, add via the + next to "Certificates"
+- CV download link — the button is disabled until you add a link via profile ✏️
 
-## Step 2 — Upload these files
+## First-time setup (same as before)
 
-1. On your new (empty) repo page, click **"uploading an existing file"** (a blue link in the middle of the page).
-2. Open the folder I gave you on your computer. Select **everything inside it** (all files and folders: `index.html`, `editor.html`, `data.json`, `data-draft.json`, `assets`, `images`, `.nojekyll`, `README.md`) and drag them all into the browser upload box at once.
-   - Tip: in the folder, press `Ctrl+A` (Windows) or `Cmd+A` (Mac) to select everything, then drag.
-3. Scroll down, click **Commit changes**.
+1. Create/reuse the repo `arjunlk24.github.io`
+2. Unzip this folder, select everything, upload via GitHub's **Add file → Upload files** (overwrite existing)
+3. Make sure GitHub Pages is on (Settings → Pages)
+4. Open `arjunlk24.github.io/editor.html`, connect with your token (same one as before still works, or make a new one — see earlier instructions if needed)
 
-## Step 3 — Turn on GitHub Pages
+## Editing day-to-day
 
-1. In your repo, click **Settings** (top menu) → **Pages** (left sidebar).
-2. Under "Build and deployment" → Source, make sure it says **Deploy from a branch**, Branch = **main**, folder = **/(root)**. Click **Save** if you changed anything.
-3. Wait 1–2 minutes. Your live site will be at:
-   👉 **https://arjunlk24.github.io**
+- **✏️** on anything → edit it
+- **+** next to "My Projects" / "Certificates" → add a new one
+- For hero heading and project titles: wrap the part you want colored in `*asterisks*`, e.g. `Cyber *Security* Tester` — the editor turns that into the gradient effect automatically
+- **Save Changes** → safe draft, live site untouched
+- **Deploy** → publishes live
 
-## Step 4 — Create your access token (this is what lets the editor publish for you)
+## A few known things worth knowing
 
-This token is like a special password that only lets the editor update *this one repository* — nothing else on your account.
-
-1. Go to https://github.com/settings/personal-access-tokens/new
-2. **Token name:** `portfolio-editor`
-3. **Expiration:** pick 90 days or 1 year (you can always make a new one later — I'll remind you if it ever expires).
-4. **Repository access:** choose **"Only select repositories"** → pick `arjunlk24.github.io`.
-5. Scroll to **Permissions → Repository permissions** → find **"Contents"** → set it to **"Read and write"**.
-6. Scroll down, click **Generate token**.
-7. **Copy the token now** (it looks like `github_pat_...`) — GitHub only shows it once. Paste it somewhere safe temporarily (like a Notes app) — you'll paste it into the editor in the next step.
-
-## Step 5 — Open your editor and connect
-
-1. Go to: **https://arjunlk24.github.io/editor.html**
-2. Paste your token into the box, click **Connect**.
-3. That's it — you're in edit mode. This token stays saved in this browser only, so you won't need to paste it again on this device.
-
----
-
-## How to use it day-to-day
-
-- **Pencil icon (✏️)** on anything → edit that item.
-- **Plus icon (+)** next to a section heading → add a new item to that section (new job, new project, new skill category, etc).
-- **"+ Add a new section"** at the bottom → create a whole new section (e.g. "Publications", "Volunteering") with your own items in it.
-- **Save Changes** → stores your edits safely on GitHub as a draft. Your *live* site is untouched — nothing visitors see changes yet. Safe to do anytime, as often as you like.
-- **Deploy** → publishes your current edits to the real, live site. Takes about a minute to go live.
-- **Preview** → opens your live-look page in a new tab so you can check things before deploying.
-- **Theme dots** (bottom of the left sidebar) → switch color themes instantly.
-- **⏻ button** → disconnects this browser from GitHub (use if you're on a shared/public computer).
-
-## Adding your photo or project screenshots
-
-Click the pencil on your profile photo (top-left) or open/add a project and use the image field — pick a photo from your computer, save the form, and it uploads automatically. No resizing needed, just keep images under a few MB.
-
-## If something goes wrong
-
-- **"Could not connect" when pasting token:** double check you copied the whole token, and that under Step 4.5 you set Contents to "Read and write" for the right repository.
-- **Site shows old content after Deploy:** GitHub Pages can take up to ~60 seconds, sometimes a couple of minutes. Hard-refresh your browser (Ctrl+Shift+R / Cmd+Shift+R).
-- **Token expired:** repeat Step 4 to make a new one, then paste it in at the editor's connect screen again.
-- **Want a different look entirely later:** just tell me — I can design a brand new template while keeping all your content exactly as it is, since your content (`data.json`) and design (the `assets` folder) are kept separate on purpose.
-
-## What's in this folder (for your reference — you never need to edit these by hand)
-
-| File | What it is |
-|---|---|
-| `index.html` | Your live, public portfolio page |
-| `editor.html` | Your private editing tool |
-| `data.json` | Your **live** content (what visitors currently see) |
-| `data-draft.json` | Your **draft** content (what you're currently working on) |
-| `assets/css/` | Design/theme files |
-| `assets/js/` | The logic that powers rendering, editing, and publishing |
-| `images/` | Your uploaded photos |
+- The 3 real project descriptions (Raspberry Spy Pi, HashPrac, Water Availability website) are pulled straight from your original text — just add screenshots/links when ready
+- Video uploads aren't supported through the editor (only images) — if you want a video on a project card, upload the `.mp4` directly to `assets/media/` on GitHub, then set the card's media type to "Video" and type in that path
+- Contact form uses formsubmit.co — first message ever sent will trigger a one-time confirmation email to activate it
